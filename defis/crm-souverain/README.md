@@ -1,11 +1,11 @@
-# Défi Eva PRO - CRM prospects avec relance 7 jours
+# Défi crm-souverain (CRM Prospects avec relance 7 jours)
 
-MVP Next.js exécutable + déployable Vercel pour le défi Alegria d'Eva PRO.
+MVP Next.js exécutable + déployable Vercel. Origine : défi Alegria d'Eva PRO du 5/9/2026 - premier livrable de la boite à outils souveraine.
 
 Version : 0.1.0
 Livraison : 2026-09-05
 
-Compagnon no-code : [az-no-code/defis/eva-pro-crm-relance](https://github.com/DevDaveRug/az-no-code/tree/main/defis/eva-pro-crm-relance)
+Compagnon no-code : [az-no-code/defis/crm-souverain](https://github.com/DevDaveRug/az-no-code/tree/main/defis/crm-souverain)
 
 ## Ce que fait ce MVP
 
@@ -28,7 +28,7 @@ Le calcul "prochaine relance = dernier contact + 7 jours" est fait côté applic
 Prérequis : Node 18+, une URL Postgres (Neon recommandé, ou Postgres local).
 
 ```bash
-cd defis/eva-pro-crm-relance
+cd defis/crm-souverain
 npm install
 cp .env.example .env.local
 # éditer .env.local avec ta DATABASE_URL Neon
@@ -44,7 +44,7 @@ npm run dev
 
 - Aller sur https://console.neon.tech/ (compte de David)
 
-- New project -> nom : `eva-pro-crm` -> région : `Europe (Frankfurt)`
+- New project -> nom : `crm-souverain` -> région : `Europe (Frankfurt)`
 
 - Copier la connection string avec pooler (finit par `-pooler.aws.neon.tech`)
 
@@ -54,7 +54,7 @@ npm run dev
 
 - Import Git Repository -> DevDaveRug/az-code
 
-- Root Directory : `defis/eva-pro-crm-relance` (important, pas la racine du repo)
+- Root Directory : `defis/crm-souverain` (important, pas la racine du repo)
 
 - Framework preset : Next.js (auto-détecté)
 
@@ -74,7 +74,7 @@ npm run dev
 
 ### 4. URL vivante à partager
 
-Vercel donne une URL du style `https://eva-pro-crm-<hash>.vercel.app`. À partager avec Eva PRO comme démo.
+Vercel donne une URL du style `https://crm-souverain-<hash>.vercel.app`. À partager avec Eva PRO ou tout prospect comme démo.
 
 ## Endpoints API
 
@@ -83,7 +83,7 @@ Vercel donne une URL du style `https://eva-pro-crm-<hash>.vercel.app`. À partag
 Renvoie tous les prospects enrichis.
 
 ```bash
-curl https://eva-pro-crm.vercel.app/api/prospects
+curl https://crm-souverain.vercel.app/api/prospects
 ```
 
 ### GET /api/prospects?vue=relance
@@ -91,7 +91,7 @@ curl https://eva-pro-crm.vercel.app/api/prospects
 Renvoie uniquement les prospects à relancer (statut Nouveau/En cours + prochaine relance <= today).
 
 ```bash
-curl https://eva-pro-crm.vercel.app/api/prospects?vue=relance
+curl https://crm-souverain.vercel.app/api/prospects?vue=relance
 ```
 
 ### POST /api/prospects
@@ -99,7 +99,7 @@ curl https://eva-pro-crm.vercel.app/api/prospects?vue=relance
 Crée un prospect (statut auto : NOUVEAU).
 
 ```bash
-curl -X POST https://eva-pro-crm.vercel.app/api/prospects \
+curl -X POST https://crm-souverain.vercel.app/api/prospects \
   -H "Content-Type: application/json" \
   -d '{"prenom":"Test","nom":"Prospect","email":"test@example.com"}'
 ```
@@ -107,7 +107,7 @@ curl -X POST https://eva-pro-crm.vercel.app/api/prospects \
 ## Structure
 
 ```
-defis/eva-pro-crm-relance/
+defis/crm-souverain/
   README.md                 # ce fichier
   package.json
   next.config.js

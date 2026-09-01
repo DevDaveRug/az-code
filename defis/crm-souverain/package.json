@@ -1,8 +1,8 @@
 {
-  "name": "eva-pro-crm-relance",
+  "name": "crm-souverain",
   "version": "0.1.0",
   "private": true,
-  "description": "CRM prospects Eva PRO - MVP Next.js + Neon + Prisma (défi Alegria)",
+  "description": "CRM Souverain - MVP Next.js + Neon + Prisma (défi Alegria)",
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",

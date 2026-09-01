@@ -22,7 +22,7 @@ Cette dualité sert deux ambitions :
 
 ```
 defis/
-  eva-pro-crm-relance/    # défi actuel, livraison 5/9/2026
+  crm-souverain/    # défi actuel, livraison 5/9/2026
     src/                  # code Next.js
     prisma/               # schema + seed
     README.md             # comment lancer, comment déployer
@@ -49,7 +49,7 @@ Aligné sur LIA'M :
 
 | Défi | Slug | Livraison | État |
 |---|---|---|---|
-| Eva PRO - CRM prospects avec relance 7 jours | `eva-pro-crm-relance` | 2026-09-05 | en cours |
+| crm-souverain (issu défi Alegria Eva PRO, CRM Prospects relance 7 jours) | `crm-souverain` | 2026-09-05 | en cours |
 
 ## Roadmap ambition
 
