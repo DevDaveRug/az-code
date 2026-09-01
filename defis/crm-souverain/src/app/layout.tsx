@@ -3,7 +3,7 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "CRM Prospects - Eva PRO",
+  title: "CRM Souverain",
   description: "MVP CRM prospects avec relance 7 jours (défi Alegria)"
 };
 
@@ -31,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </header>
         <main className="max-w-6xl mx-auto px-4 py-6">{children}</main>
         <footer className="max-w-6xl mx-auto px-4 py-8 text-xs" style={{ color: "var(--muted)" }}>
-          Défi Eva PRO - Alegria - MVP souverain Next.js + Neon + Prisma
+          crm-souverain v0.1 - défi Alegria - MVP souverain Next.js + Neon + Prisma
         </footer>
       </body>
     </html>

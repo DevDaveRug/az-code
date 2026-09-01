@@ -20,7 +20,7 @@ Pourquoi souverain :
 
 ## Briques nécessaires
 
-### v0.1 - MVP CRM simple (défi Eva PRO)
+### v0.1 - MVP CRM simple (crm-souverain, origine défi Eva PRO)
 
 -> Une table (Prospects)
 

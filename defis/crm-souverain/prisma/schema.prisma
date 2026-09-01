@@ -1,4 +1,4 @@
-// CRM Prospects Eva PRO - Prisma schema
+// CRM Souverain - Prisma schema
 // Aligné sur le stack LIA'M : Neon PostgreSQL, Prisma client, migrations gérées via `prisma migrate`.
 
 generator client {
