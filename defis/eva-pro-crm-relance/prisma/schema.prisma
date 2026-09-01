@@ -1,0 +1,47 @@
+// CRM Prospects Eva PRO - Prisma schema
+// Aligné sur le stack LIA'M : Neon PostgreSQL, Prisma client, migrations gérées via `prisma migrate`.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Statut {
+  NOUVEAU
+  EN_COURS
+  GAGNE
+  PERDU
+}
+
+enum Source {
+  LINKEDIN
+  RECOMMANDATION
+  SITE
+  AUTRE
+}
+
+model Prospect {
+  id                Int      @id @default(autoincrement())
+  prenom            String
+  nom               String
+  entreprise        String?
+  email             String
+  telephone         String?
+  statut            Statut   @default(NOUVEAU)
+  source            Source   @default(AUTRE)
+  dateEntree        DateTime @default(now())        @map("date_entree")
+  dernierContact    DateTime @default(now())        @map("dernier_contact")
+  notes             String?  @db.Text
+  montantPotentiel  Decimal? @db.Decimal(10, 2)     @map("montant_potentiel")
+
+  createdAt         DateTime @default(now())        @map("created_at")
+  updatedAt         DateTime @updatedAt             @map("updated_at")
+
+  @@index([statut, dernierContact])
+  @@index([dateEntree])
+  @@map("sc_prospects")
+}
