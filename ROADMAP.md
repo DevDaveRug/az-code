@@ -1,8 +1,8 @@
 # ROADMAP az-code
 
-Version : 0.1.0
-Date : 2026-09-01
-Session : S131c
+Version : 0.2.0
+Date : 2026-09-03
+Session : S132c
 
 ## Ambition
 
@@ -36,15 +36,31 @@ Pourquoi souverain :
 
 État : en cours (livraison 5/9/2026).
 
-### v0.2 - Multi-tables + relations
+### v0.2 - Multi-tables + relations (crm-souverain v0.2)
 
--> Plusieurs tables dans une même base
+Point de départ : la brique v0.1 (crm-souverain) livre un CRM 1 table (Prospects) fonctionnel. La v0.2 fait grandir ce même défi pour couvrir un cas réel : un prospect appartient à une entreprise, un prospect génère plusieurs interactions dans le temps (appel, email, RDV, message LinkedIn). Airtable gère nativement ces relations, la version souveraine doit rattraper cette parité pour rester crédible en démo.
 
--> Champs de type Lien (foreign keys)
+Nouvelles tables (à ajouter à la base `crm-souverain`) :
 
--> Cascade + intégrité
+-> `SC_Entreprises` : une ligne par entreprise cliente ou prospect (nom, secteur, taille, site, adresse, notes). Le champ `entrepriseId` devient une FK sur `SC_Prospects` (un prospect appartient à 0 ou 1 entreprise, une entreprise a N prospects).
 
--> UI pour gérer les relations (dropdown avec recherche)
+-> `SC_Interactions` : log chronologique des échanges. Champs : `prospectId` (FK), `type` (enum : appel, email, LI, WA, RDV), `date`, `resume`, `resultat`, `nextStep`. Remplace le champ `Notes` unique de v0.1 par un vrai journal daté.
+
+Nouveaux comportements attendus :
+
+-> Champ `Dernier contact` sur `SC_Prospects` devient **calculé** (max de `date` sur les interactions liées) plutôt que saisi manuellement. Impact : `Prochaine relance` reste cohérente sans intervention.
+
+-> Suppression d'un prospect -> cascade sur ses interactions (`onDelete: Cascade` dans Prisma). Suppression d'une entreprise -> détache les prospects (`onDelete: SetNull`), jamais silent-drop.
+
+-> Vue détail prospect (`/prospects/[id]`) : affiche l'entreprise + les N interactions triées par date desc + bouton "+ Ajouter interaction" (server action).
+
+-> Dropdown entreprise dans le formulaire d'ajout : composant custom searchable (React server components + query params), pas de librairie tierce -- démontre qu'on peut faire mieux qu'un `<select>` natif sans dépendance lourde.
+
+Livrable démontrable : capture d'un prospect fictif (ex : Bob Durand, société "ACME") avec 3 interactions historisées + prochaine relance recalculée automatiquement + URL vivante sur Vercel.
+
+Dépendance amont : brique v0.1 déployée et stable (fait, S131c).
+
+Séquençage prévu : session S133c ou S134c selon dispo (après P4 skills tri code_archi).
 
 ### v0.3 - Types de champs enrichis
 
@@ -151,3 +167,9 @@ Pourquoi souverain :
 -> facturation : Stripe (aligné LIA'M) ou offre uniquement self-host au départ ?
 
 À arbitrer au fil des défis.
+
+## Changelog
+
+-> 0.2.0 (2026-09-03, S132c) : v0.2 enrichie (crm-souverain v0.2 -- multi-tables + relations). Tables cibles nommées (`SC_Entreprises`, `SC_Interactions`), FK Prisma détaillées, cascade explicitée, comportements calculés (Dernier contact auto), livrable démontrable défini. Séquençage post-P4.
+
+-> 0.1.0 (2026-09-01, S131c) : ROADMAP initiale (9 briques v0.1 -> v1.0 pour ambition full clone Airtable souverain).
