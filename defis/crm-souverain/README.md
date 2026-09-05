@@ -1,27 +1,38 @@
-# Défi crm-souverain (CRM Prospects avec relance 7 jours)
+# Défi crm-souverain (CRM avec relances + relations)
 
-MVP Next.js exécutable + déployable Vercel. Origine : défi Alegria d'Eva PRO du 5/9/2026 - premier livrable de la boite à outils souveraine.
+MVP Next.js exécutable + déployable Vercel. Origine : défi Alegria d'Eva PRO du 5/9/2026 - première brique de la boite à outils souveraine.
 
-Version : 0.1.0
-Livraison : 2026-09-05
+Version : 0.2.0
+Livraison v0.1 : 2026-09-05
+Livraison v0.2 : 2026-09-04
 
 Compagnon no-code : [az-no-code/defis/crm-souverain](https://github.com/DevDaveRug/az-no-code/tree/main/defis/crm-souverain)
 
 ## Ce que fait ce MVP
 
-Une page unique qui liste les prospects avec :
+**v0.1 (base)** :
 
-- vue "Tous les prospects" (par défaut, triée par date d'entrée)
+-> vue "Tous les prospects" (par défaut, triée par date d'entrée)
 
-- vue "À relancer" (accès via `/?vue=relance`, filtre : statut Nouveau/En cours ET prochaine relance <= aujourd'hui)
+-> vue "À relancer" (accès via `/?vue=relance`, filtre statut Nouveau/En cours + prochaine relance <= aujourd'hui)
 
-- formulaire d'ajout (`/nouveau`)
+-> formulaire d'ajout (`/nouveau`)
 
-- API REST minimale (`GET /api/prospects`, `POST /api/prospects`)
+-> seed avec 4 prospects fictifs couvrant les 4 statuts
 
-- seed avec 4 prospects fictifs (Alice, Bob, Chloé, Emma) couvrant les 4 statuts
+**v0.2 (nouveautés)** :
 
-Le calcul "prochaine relance = dernier contact + 7 jours" est fait côté application (fonction pure dans `src/lib/relance.ts`), pas en base. La colonne "Jours" colore la ligne en rouge (retard), orange (aujourd'hui), jaune (imminent).
+-> table `Entreprise` séparée (nom, secteur, taille, site, adresse, notes) -- une entreprise a N prospects
+
+-> table `Interaction` (log chronologique par prospect : appel, email, LI, WA, RDV, autre) -- date + résumé + résultat + prochaine étape
+
+-> vue détail prospect (`/prospects/[id]`) : coordonnées + entreprise + notes + timeline complète des interactions + formulaire d'ajout d'interaction (server action)
+
+-> dropdown searchable custom sur le formulaire d'ajout de prospect : cherche une entreprise existante par nom OU propose "+ Créer nouvelle entreprise : « <texte> »" au vol (composant client, zero lib tierce)
+
+-> API enrichie : `GET /api/prospects/[id]` (détail avec entreprise + interactions), `POST /api/prospects/[id]/interactions`, `GET/POST /api/entreprises`
+
+Le calcul "prochaine relance = dernier contact + 7 jours" est fait côté application (fonction pure dans `src/lib/relance.ts`). Le champ physique `prospect.dernierContact` est maintenu à jour par les server actions à chaque nouvelle interaction (max entre valeur actuelle et date de l'interaction).
 
 ## Lancer en local
 
@@ -32,7 +43,7 @@ cd defis/crm-souverain
 npm install
 cp .env.example .env.local
 # éditer .env.local avec ta DATABASE_URL Neon
-npx prisma migrate dev --name init
+npx prisma db push
 npm run db:seed
 npm run dev
 # ouvrir http://localhost:3000
@@ -42,120 +53,159 @@ npm run dev
 
 ### 1. Créer la base Neon
 
-- Aller sur https://console.neon.tech/ (compte de David)
+-> Aller sur https://console.neon.tech/
 
-- New project -> nom : `crm-souverain` -> région : `Europe (Frankfurt)`
+-> New project -> nom : `crm-souverain` -> région : `Europe (Frankfurt)`
 
-- Copier la connection string avec pooler (finit par `-pooler.aws.neon.tech`)
+-> Copier la connection string avec pooler (finit par `-pooler.aws.neon.tech`)
 
 ### 2. Importer sur Vercel
 
-- Aller sur https://vercel.com/new
+-> Aller sur https://vercel.com/new
 
-- Import Git Repository -> DevDaveRug/az-code
+-> Import Git Repository -> DevDaveRug/az-code
 
-- Root Directory : `defis/crm-souverain` (important, pas la racine du repo)
+-> Root Directory : `defis/crm-souverain` (important, pas la racine du repo)
 
-- Framework preset : Next.js (auto-détecté)
+-> Framework preset : Next.js (auto-détecté)
 
-- Environment Variables :
+-> Environment Variables : `DATABASE_URL` = la connection string Neon
 
-  - `DATABASE_URL` = la connection string Neon copiée à l'étape 1
-
-- Deploy
+-> Deploy
 
 ### 3. Après premier deploy
 
-- Aller dans le shell Vercel (ou via `vercel env pull && npx prisma migrate deploy && npx tsx prisma/seed.ts` en local)
+Le `buildCommand` fait déjà `prisma db push` au build (voir `vercel.json`). Pour semer les données de démo :
 
-- Une fois : `npx prisma db push` pour créer les tables (le buildCommand fait déjà `migrate deploy` mais s'il n'y a pas de migrations en dossier, `db push` fait le job)
+```bash
+curl -X POST https://<votre-url>.vercel.app/api/seed
+# ou GET pour convenience : https://<votre-url>.vercel.app/api/seed
+```
 
-- Une fois : lancer le seed : `npm run db:seed` (local avec la même DATABASE_URL, ou script Vercel)
+Retourne le compte final (entreprises, prospects, interactions).
 
-### 4. URL vivante à partager
+**Migration v0.1 -> v0.2** : le schéma a changé (retrait de `entreprise` String sur Prospect, ajout de FK `entrepriseId` + nouvelles tables `sc_entreprises` et `sc_interactions`). Après pull de v0.2 sur une base v0.1 existante :
 
-Vercel donne une URL du style `https://crm-souverain-<hash>.vercel.app`. À partager avec Eva PRO ou tout prospect comme démo.
+```bash
+npx prisma db push
+curl -X POST https://<votre-url>.vercel.app/api/seed  # reseed complet
+```
+
+Ou en local :
+
+```bash
+npx prisma db push
+npm run db:seed
+```
+
+### 4. URL vivante
+
+Vercel donne `https://crm-souverain.vercel.app` (ou variant hash). À partager comme démo.
 
 ## Endpoints API
 
-### GET /api/prospects
+### `GET /api/prospects`
 
-Renvoie tous les prospects enrichis.
+Liste tous les prospects, entreprise incluse.
 
 ```bash
 curl https://crm-souverain.vercel.app/api/prospects
 ```
 
-### GET /api/prospects?vue=relance
+### `GET /api/prospects?vue=relance`
 
-Renvoie uniquement les prospects à relancer (statut Nouveau/En cours + prochaine relance <= today).
+Uniquement les prospects à relancer.
 
-```bash
-curl https://crm-souverain.vercel.app/api/prospects?vue=relance
-```
+### `POST /api/prospects`
 
-### POST /api/prospects
-
-Crée un prospect (statut auto : NOUVEAU).
+Crée un prospect. `entrepriseId` optionnel (Int, doit préexister).
 
 ```bash
 curl -X POST https://crm-souverain.vercel.app/api/prospects \
   -H "Content-Type: application/json" \
-  -d '{"prenom":"Test","nom":"Prospect","email":"test@example.com"}'
+  -d '{"prenom":"Test","nom":"Prospect","email":"test@example.com","entrepriseId":1}'
 ```
+
+### `GET /api/prospects/[id]`
+
+Détail prospect + entreprise + interactions triées date desc + prochaine relance calculée.
+
+### `POST /api/prospects/[id]/interactions`
+
+Ajoute une interaction. Met à jour `prospect.dernierContact` si la date est plus récente (transaction atomique).
+
+```bash
+curl -X POST https://crm-souverain.vercel.app/api/prospects/1/interactions \
+  -H "Content-Type: application/json" \
+  -d '{"type":"EMAIL","date":"2026-09-04","resume":"Envoi devis","resultat":"Attend","nextStep":"Relance J+7"}'
+```
+
+Types acceptés : `APPEL`, `EMAIL`, `LI`, `WA`, `RDV`, `AUTRE`.
+
+### `GET /api/entreprises?q=...`
+
+Recherche entreprises par nom (case-insensitive, max 50 résultats). Utilisé par le dropdown searchable du formulaire.
+
+### `POST /api/entreprises`
+
+Crée une entreprise. `nom` requis, autres champs optionnels.
+
+### `POST /api/seed`
+
+Reset complet + reseed 4 entreprises + 4 prospects + interactions. Idempotent.
 
 ## Structure
 
 ```
 defis/crm-souverain/
-  README.md                 # ce fichier
+  README.md                       ce fichier
   package.json
-  next.config.js
-  tsconfig.json
-  tailwind.config.ts
-  postcss.config.js
-  vercel.json
-  .env.example
-  .gitignore
   prisma/
-    schema.prisma          # modèle Prospect + enums Statut, Source
-    seed.ts                # 4 prospects fictifs
+    schema.prisma                 3 models (Entreprise, Prospect, Interaction) + 3 enums
+    seed.ts                       seed CLI local (miroir de api/seed)
   src/
     lib/
-      prisma.ts            # singleton Prisma client
-      relance.ts           # fonctions pures prochaineRelance / joursRestants
+      prisma.ts                   singleton Prisma client
+      relance.ts                  fonctions pures prochaineRelance / joursRestants / couleurUrgence
+      interactions.ts             helpers (derniereInteractionAt, libellés + couleurs par type)
+    components/
+      EntrepriseSearchable.tsx    dropdown searchable custom (client, zero lib tierce)
     app/
-      layout.tsx           # nav + footer
-      globals.css          # tailwind + variables theme
-      page.tsx             # vue liste + vue relance
-      nouveau/page.tsx     # formulaire d'ajout (server action)
-      api/prospects/route.ts  # GET + POST
+      layout.tsx                  nav + footer
+      globals.css                 tailwind + variables theme
+      page.tsx                    vue liste + vue relance (avec lien Détail)
+      nouveau/page.tsx            formulaire ajout prospect (server action + EntrepriseSearchable)
+      prospects/[id]/page.tsx     vue détail prospect (server action ajouterInteraction)
+      api/
+        prospects/route.ts        GET + POST
+        prospects/[id]/route.ts   GET détail
+        prospects/[id]/interactions/route.ts   POST
+        entreprises/route.ts      GET + POST
+        seed/route.ts             POST reset+reseed
 ```
 
 ## Alignement stack LIA'M
 
 Ce MVP reprend les choix de LIA'M :
 
-- Next.js 14 App Router, runtime Node
+-> Next.js 14 App Router, runtime Node
 
-- TypeScript strict
+-> TypeScript strict
 
-- Prisma ORM + PostgreSQL (Neon)
+-> Prisma ORM + PostgreSQL (Neon)
 
-- Server components + server actions (pas de state client inutile)
+-> Server components + server actions (pas de state client inutile)
 
-- Vercel deploy avec `prisma migrate deploy` au build
+-> Vercel deploy avec `prisma db push` au build
 
-Différences volontaires (parce que c'est un MVP indépendant) :
+Différences volontaires :
 
-- pas de NextAuth (une seule "org" pour le défi Alegria)
+-> pas de NextAuth (une seule "org" pour ce défi)
 
-- pas de RLS multi-tenant (pas nécessaire pour le défi)
+-> pas de RLS multi-tenant (à réintroduire en v0.7)
 
-- pas de wassenger/telegram/openai (défi = CRM basique, pas d'IA)
-
-Ces briques seront ajoutées progressivement dans les prochains défis, cf `az-code/ROADMAP.md`.
+-> pas d'IA (à venir dans les prochaines briques)
 
 ## Ambition roadmap
 
-Cf `az-code/ROADMAP.md`. Ce MVP est la brique **v0.1 - MVP CRM simple**. Prochaine brique cible (v0.2) : multi-tables + relations.
+Cf `az-code/ROADMAP.md`. Ce MVP est la brique **v0.2 - Multi-tables + relations**. Prochaine brique cible (v0.3) : types de champs enrichis (formules, rollup, lookup, attachements).

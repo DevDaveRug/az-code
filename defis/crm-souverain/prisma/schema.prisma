@@ -1,5 +1,6 @@
-// CRM Souverain - Prisma schema
-// Aligné sur le stack LIA'M : Neon PostgreSQL, Prisma client, migrations gérées via `prisma migrate`.
+// CRM Souverain - Prisma schema v0.2
+// Aligné sur le stack LIA'M : Neon PostgreSQL, Prisma client, migrations gérées via `prisma db push` sur Vercel.
+// v0.2 : multi-tables (SC_Entreprises + SC_Interactions) + relations FK propres.
 
 generator client {
   provider = "prisma-client-js"
@@ -24,11 +25,38 @@ enum Source {
   AUTRE
 }
 
+enum TypeInteraction {
+  APPEL
+  EMAIL
+  LI
+  WA
+  RDV
+  AUTRE
+}
+
+model Entreprise {
+  id         Int      @id @default(autoincrement())
+  nom        String
+  secteur    String?
+  taille     String?
+  site       String?
+  adresse    String?
+  notes      String?  @db.Text
+
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt      @map("updated_at")
+
+  prospects  Prospect[]
+
+  @@index([nom])
+  @@map("sc_entreprises")
+}
+
 model Prospect {
   id                Int      @id @default(autoincrement())
   prenom            String
   nom               String
-  entreprise        String?
+  entrepriseId      Int?     @map("entreprise_id")
   email             String
   telephone         String?
   statut            Statut   @default(NOUVEAU)
@@ -41,7 +69,28 @@ model Prospect {
   createdAt         DateTime @default(now())        @map("created_at")
   updatedAt         DateTime @updatedAt             @map("updated_at")
 
+  entreprise        Entreprise?    @relation(fields: [entrepriseId], references: [id], onDelete: SetNull)
+  interactions      Interaction[]
+
   @@index([statut, dernierContact])
   @@index([dateEntree])
+  @@index([entrepriseId])
   @@map("sc_prospects")
+}
+
+model Interaction {
+  id          Int              @id @default(autoincrement())
+  prospectId  Int              @map("prospect_id")
+  type        TypeInteraction  @default(AUTRE)
+  date        DateTime
+  resume      String           @db.Text
+  resultat    String?          @db.Text
+  nextStep    String?          @db.Text            @map("next_step")
+
+  createdAt   DateTime         @default(now())     @map("created_at")
+
+  prospect    Prospect         @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+
+  @@index([prospectId, date])
+  @@map("sc_interactions")
 }

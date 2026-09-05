@@ -1,8 +1,8 @@
 {
   "name": "crm-souverain",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "CRM Souverain - MVP Next.js + Neon + Prisma (défi Alegria)",
+  "description": "CRM Souverain v0.2 - multi-tables + relations (Prospects + Entreprises + Interactions). Next.js + Neon + Prisma (défi Alegria).",
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",

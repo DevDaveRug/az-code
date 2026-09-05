@@ -1,13 +1,15 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { Statut, Source } from "@prisma/client";
+import { EntrepriseSearchable } from "@/components/EntrepriseSearchable";
 
 async function creerProspect(formData: FormData) {
   "use server";
   const prenom = String(formData.get("prenom") ?? "").trim();
   const nom = String(formData.get("nom") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
-  const entreprise = String(formData.get("entreprise") ?? "").trim() || null;
+  const entrepriseIdRaw = String(formData.get("entreprise_id") ?? "").trim();
+  const entrepriseNomInline = String(formData.get("entreprise_nomInline") ?? "").trim();
   const telephone = String(formData.get("telephone") ?? "").trim() || null;
   const source = (String(formData.get("source") ?? "AUTRE") as Source) || Source.AUTRE;
   const notes = String(formData.get("notes") ?? "").trim() || null;
@@ -16,12 +18,23 @@ async function creerProspect(formData: FormData) {
     throw new Error("Prénom, nom et email sont requis");
   }
 
+  // Résolution de l'entreprise :
+  //   1- Si un id a été sélectionné dans le dropdown -> utiliser directement.
+  //   2- Sinon si un nom inline a été proposé -> créer l'entreprise puis récupérer son id.
+  //   3- Sinon -> prospect sans entreprise (null).
+  let entrepriseId: number | null = null;
+  if (entrepriseIdRaw) {
+    const parsed = Number(entrepriseIdRaw);
+    if (Number.isFinite(parsed) && parsed > 0) entrepriseId = parsed;
+  } else if (entrepriseNomInline) {
+    const nouvelle = await prisma.entreprise.create({ data: { nom: entrepriseNomInline } });
+    entrepriseId = nouvelle.id;
+  }
+
   await prisma.prospect.create({
     data: {
-      prenom,
-      nom,
-      email,
-      entreprise,
+      prenom, nom, email,
+      entrepriseId,
       telephone,
       source,
       notes,
@@ -43,7 +56,9 @@ export default function NouveauProspect() {
           <Champ label="Prénom" name="prenom" required />
           <Champ label="Nom" name="nom" required />
         </div>
-        <Champ label="Entreprise" name="entreprise" />
+
+        <EntrepriseSearchable name="entreprise" />
+
         <Champ label="Email" name="email" type="email" required />
         <Champ label="Téléphone" name="telephone" type="tel" />
 

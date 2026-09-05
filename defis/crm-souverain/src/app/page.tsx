@@ -27,7 +27,8 @@ export default async function Home({ searchParams }: { searchParams: { vue?: str
   const vueRelance = searchParams.vue === "relance";
 
   const prospects = await prisma.prospect.findMany({
-    orderBy: vueRelance ? { dernierContact: "asc" } : { dateEntree: "desc" }
+    orderBy: vueRelance ? { dernierContact: "asc" } : { dateEntree: "desc" },
+    include: { entreprise: { select: { id: true, nom: true } } }
   });
 
   const today = new Date();
@@ -66,13 +67,14 @@ export default async function Home({ searchParams }: { searchParams: { vue?: str
                 <th className="text-left py-2 pr-4">Prochaine relance</th>
                 <th className="text-left py-2 pr-4">Jours</th>
                 <th className="text-left py-2 pr-4">Contact</th>
+                <th className="text-left py-2 pr-4"></th>
               </tr>
             </thead>
             <tbody>
               {rows.map((p) => (
                 <tr key={p.id} className={`border-b ${couleurUrgence(p.jours)}`} style={{ borderColor: "var(--border)" }}>
                   <td className="py-2 pr-4 font-medium">{p.prenom} {p.nom}</td>
-                  <td className="py-2 pr-4">{p.entreprise ?? "-"}</td>
+                  <td className="py-2 pr-4">{p.entreprise?.nom ?? "-"}</td>
                   <td className="py-2 pr-4">
                     <span className={`inline-block px-2 py-0.5 rounded text-xs ${COULEUR_STATUT[p.statut]}`}>
                       {LIBELLE_STATUT[p.statut]}
@@ -84,6 +86,9 @@ export default async function Home({ searchParams }: { searchParams: { vue?: str
                   <td className="py-2 pr-4 text-xs">
                     <a href={`mailto:${p.email}`} className="underline">{p.email}</a>
                     {p.telephone && <><br /><span style={{ color: "var(--muted)" }}>{p.telephone}</span></>}
+                  </td>
+                  <td className="py-2 pr-4">
+                    <a href={`/prospects/${p.id}`} className="text-blue-600 underline text-xs">Détail →</a>
                   </td>
                 </tr>
               ))}
