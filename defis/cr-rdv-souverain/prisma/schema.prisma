@@ -1,0 +1,43 @@
+// Schema Prisma -- cr-rdv-souverain v0.1
+// Défi Alegria Eva PRO 2026-09-08 (S133z)
+//
+// Table minimale : un CR contient les notes brutes (input), le CR formaté (output markdown),
+// et les métadonnées extraites (date, interlocuteur, sujet) pour recherche/tri.
+//
+// v0.2 (roadmap) : ajout prospectId nullable -> FK optionnelle vers crm-souverain (REST HTTP cross-app).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Cr {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Input
+  notesBrutes   String   @db.Text
+
+  // Output
+  crFormate     String   @db.Text
+
+  // Métadonnées extraites du CR par le LLM (aide à la recherche)
+  dateRdv       DateTime?
+  interlocuteur String?
+  sujet         String?
+
+  // Traçabilité modèle utilisé (auditabilité + comparaison qualité par modèle)
+  modeleLlm     String?  // ex: "anthropic/claude-sonnet-5", "google/gemini-2.5-flash"
+
+  // v0.2 : rattachement crm-souverain (optionnel)
+  prospectId    String?  // cuid distant, pas de FK Prisma (cross-app REST)
+
+  @@index([createdAt(sort: Desc)])
+  @@index([dateRdv(sort: Desc)])
+  @@map("cr")
+}

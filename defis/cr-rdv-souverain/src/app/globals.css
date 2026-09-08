@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0a0a0a;
+  --fg: #f1f5f9;
+  --or: #EAB222;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Rendu tableau markdown */
+.prose-cr table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+.prose-cr th, .prose-cr td { border: 1px solid #1a2232; padding: 8px 12px; text-align: left; vertical-align: top; }
+.prose-cr th { background: #111827; color: var(--or); font-weight: 700; }
+.prose-cr h2 { color: var(--or); font-size: 1.25rem; font-weight: 700; margin: 1.25rem 0 0.5rem; }
+.prose-cr h3 { font-size: 1.05rem; font-weight: 600; margin: 1rem 0 0.4rem; }
+.prose-cr p { margin: 0.5rem 0; line-height: 1.55; }
+.prose-cr ul { margin: 0.5rem 0 0.5rem 1.25rem; }
+.prose-cr li { margin: 0.25rem 0; }
