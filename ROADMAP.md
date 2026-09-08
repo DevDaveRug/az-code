@@ -1,12 +1,24 @@
 # ROADMAP az-code
 
-Version : 0.2.0
-Date : 2026-09-03
-Session : S132c
+Version : 0.3.0
+Date : 2026-09-08
+Session : S133z-ccweb
 
 ## Ambition
 
 Construire progressivement un clone Airtable souverain, en partant des défis Alegria. Chaque défi ajoute une brique. Le tout doit à terme rivaliser avec Airtable sur l'essentiel, tout en restant self-host sur infra Coolify + Neon.
+
+## Deux axes en parallèle
+
+Les défis Alegria ne renforcent pas tous le même produit. On distingue :
+
+-> **Axe 1 -- Clone Airtable souverain** : évolution structurée du défi `crm-souverain` (v0.1 -> v1.0), sections `v0.x` ci-dessous. Chaque incrément mérite d'être backporté sur la brique v0.1 -- l'objectif est un moteur générique.
+
+-> **Axe 2 -- Défis parallèles autonomes** : outils souverains issus de défis Alegria mais qui vivent leur vie propre dans leur dossier `defis/<slug>/`. Ils enrichissent la boite à outils souveraine (démonstration produit + argument commercial AZI/Enterprise) sans altérer la roadmap Airtable. Liste vivante :
+
+   -> **cr-rdv-souverain** (livré S133z-ccweb, 2026-09-08) -- défi Eva PRO 8/9 : formatage automatique de CR de RDV en 2 colonnes via prompt LLM. Livrable central portable : `defis/cr-rdv-souverain/PROMPT_LLM.md`. Compagnon no-code : `az-no-code/defis/cr-rdv-formate/`.
+
+   -> **[prochain défi]** -- à venir.
 
 Pourquoi souverain :
 
