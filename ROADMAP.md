@@ -12,13 +12,15 @@ Construire progressivement un clone Airtable souverain, en partant des défis Al
 
 Les défis Alegria ne renforcent pas tous le même produit. On distingue :
 
--> **Axe 1 -- Clone Airtable souverain** : évolution structurée du défi `crm-souverain` (v0.1 -> v1.0), sections `v0.x` ci-dessous. Chaque incrément mérite d'être backporté sur la brique v0.1 -- l'objectif est un moteur générique.
+-> **Axe 1 -- Clone Airtable souverain** : évolution structurée du défi `crm-souverain` (versioning interne `v0.1 -> v1.0`, sections `v0.x` ci-dessous). Chaque incrément mérite d'être backporté dans `crm-souverain` -- l'objectif est un moteur générique.
 
--> **Axe 2 -- Défis parallèles autonomes** : outils souverains issus de défis Alegria mais qui vivent leur vie propre dans leur dossier `defis/<slug>/`. Ils enrichissent la boite à outils souveraine (démonstration produit + argument commercial AZI/Enterprise) sans altérer la roadmap Airtable. Liste vivante :
+-> **Axe 2 -- Défis parallèles autonomes** : outils souverains issus de défis Alegria mais qui vivent leur vie propre dans leur dossier `defis/<slug>/`. Ils enrichissent la boite à outils souveraine (démonstration produit + argument commercial AZI/Enterprise) sans altérer la roadmap Airtable. Numérotation **ordinale (Brique N°1, N°2, N°3...)** distincte des `v0.x` de l'axe 1 -- chaque brique garde en interne sa propre versioning `vX.Y.Z`. Liste vivante :
 
-   -> **cr-rdv-souverain** (livré S133z-ccweb, 2026-09-08) -- défi Eva PRO 8/9 : formatage automatique de CR de RDV en 2 colonnes via prompt LLM. Livrable central portable : `defis/cr-rdv-souverain/PROMPT_LLM.md`. Compagnon no-code : `az-no-code/defis/cr-rdv-formate/`.
+   -> **Brique N°1 -- crm-souverain** (livré S131c, 2026-09-05 en v0.1 + S132c, 2026-09-05 en v0.2) -- défi Eva PRO 5/9 : CRM prospects + relances 7 jours. Sert aussi de socle Axe 1 pour le clone Airtable.
 
-   -> **[prochain défi]** -- à venir.
+   -> **Brique N°2 -- cr-rdv-souverain** (livré S133z-ccweb, 2026-09-08 en v0.1) -- défi Eva PRO 8/9 : formatage automatique de CR de RDV en 2 colonnes via prompt LLM. Livrable central portable : `defis/cr-rdv-souverain/PROMPT_LLM.md`. Compagnon no-code : `az-no-code/defis/cr-rdv-formate/`.
+
+   -> **Brique N°3 -- [prochain défi]** -- à venir.
 
 Pourquoi souverain :
 
