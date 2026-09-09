@@ -3,7 +3,7 @@
 Version : 0.1.0
 Livraison v0.1 : 2026-09-08
 
-MVP Next.js exécutable + déployable Vercel. Origine : défi Alegria d'Eva PRO du 8/9/2026 -- deuxième brique de la boite à outils souveraine (après crm-souverain v0.1/v0.2).
+MVP Next.js exécutable + déployable Vercel. Origine : défi Alegria d'Eva PRO du 8/9/2026 -- **brique N°2** de la boite à outils souveraine (après crm-souverain, brique N°1 en v0.1/v0.2).
 
 Compagnon no-code : [az-no-code/defis/cr-rdv-formate](https://github.com/DevDaveRug/az-no-code/tree/main/defis/cr-rdv-formate)
 
@@ -23,7 +23,7 @@ Livrable central du défi (utilisable seul, sans code) : [PROMPT_LLM.md](./PROMP
 
 -> Table Prisma `Cr` : id, notesBrutes, crFormate, dateRdv (extraite), interlocuteur, sujet, createdAt
 
-**Ce qui vient en v0.2 (prochain défi Alegria si Eva/Luc lance)** :
+**Ce qui vient en cr-rdv-souverain v0.2 (prochain défi Alegria si Eva/Luc lance)** :
 
 -> Cases à cocher interactives pour compléter les champs manquants (date, interlocuteur, contexte)
 
@@ -33,7 +33,7 @@ Livrable central du défi (utilisable seul, sans code) : [PROMPT_LLM.md](./PROMP
 
 -> Copie automatique du PDF dans `C:/DR/DR_Personnel/Pe_CR-RDV/` via webhook n8n + Syncthing
 
-**Ce qui vient en v0.3** :
+**Ce qui vient en cr-rdv-souverain v0.3** :
 
 -> Bulle vocale ElevenLabs pour dicter les notes
 
@@ -119,7 +119,7 @@ Le prompt système reste versionné côté n8n -- une amélioration du prompt b�
 
 ## Roadmap az-code v0.3 (rappel)
 
-Ce défi est la brique **v0.2 (CR-RDV)** de la boite à outils souveraine construite défi par défi. Voir `ROADMAP.md` racine du repo pour le plan v0.3 -> v1.0.
+Ce défi est la **brique N°2 (CR-RDV)** de la boite à outils souveraine construite défi par défi -- axe 2 (défis parallèles autonomes). Sa versioning interne est indépendante : `cr-rdv-souverain v0.1` (cette livraison) -> `v0.2` (roadmap ci-dessus). Voir `ROADMAP.md` racine du repo pour la distinction entre axe 1 (clone Airtable v0.1 -> v1.0) et axe 2 (briques ordinales N°1, N°2, N°3...).
 
 ## Changelog
 
