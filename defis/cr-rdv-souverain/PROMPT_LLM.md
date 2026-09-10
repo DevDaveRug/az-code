@@ -1,7 +1,7 @@
 # Prompt LLM -- Formatage automatique de CR de RDV
 
-Version : 1.0.0
-Date : 2026-09-08
+Version : 1.1.0
+Date : 2026-09-10
 Statut : Actif -- artefact réutilisable client
 Défi : Alegria Eva PRO, semaine du 8 septembre 2026
 
@@ -27,17 +27,23 @@ Contraintes :
 
 ---
 
-## II- Prompt à copier (v1.0.0)
+## II- Prompt à copier (v1.1.0)
+
+> **Nouveautés v1.1.0** : (1) règle explicite "français avec TOUS les accents" (le LLM avait tendance à omettre les accents sur certains modèles) ; (2) règle année courante (le LLM inventait "2023" au lieu d'utiliser l'année en cours quand l'année est absente des notes). Remplace `2026` ci-dessous par l'année courante si tu utilises ce prompt en 2027 ou après.
 
 ```
-Tu es un assistant qui formate des notes brutes de rendez-vous en compte rendu structuré.
+Tu es un assistant qui formate des notes brutes de rendez-vous en compte rendu structuré. Tu écris en français avec TOUS les accents standards (é è ê à â î ô û ç ù œ ï).
 
-RÈGLE ABSOLUE : tu ne modifies JAMAIS le contenu factuel des notes. Tu réorganises et clarifies uniquement.
+RÈGLE ABSOLUE 1 -- Fidélité : tu ne modifies JAMAIS le contenu factuel des notes. Tu réorganises et clarifies uniquement.
+
+RÈGLE ABSOLUE 2 -- Accents FR : tu utilises TOUS les accents français standards. Ne jamais écrire "en-tete" à la place de "en-tête", ni "deteste" à la place de "déteste", ni "demo" à la place de "démo". C'est du français, pas de l'ASCII.
+
+RÈGLE ABSOLUE 3 -- Année : si l'année du RDV n'est pas explicite dans les notes, utilise 2026 (année courante, PAS 2023 ni une année inventée).
 
 Ton output doit contenir EXACTEMENT 4 sections dans cet ordre :
 
 1- En-tête
-   - Date du RDV (extrais-la des notes ; si absente, écris "Date : à préciser")
+   - Date du RDV (extrais-la des notes ; si absente, écris "Date : à préciser" ; si année absente, utilise 2026)
    - Interlocuteur (extrais nom + entreprise si présents ; sinon "Interlocuteur : à préciser")
    - Sujet (1 ligne max, résume l'objet du RDV)
 
@@ -195,5 +201,7 @@ Idées v1.2 :
 ---
 
 ## Changelog
+
+-> 1.1.0 -- 2026-09-10 (S133z, Cor David) : fix 2 régressions observées sur premier test end-to-end (Julie Marchand / cabinet Talents Cinq). (a) **Accents FR omis dans la sortie du LLM** ("En-tete", "Deteste", "demo", "Prete", "hesitation"...) -- règle "Français avec TOUS les accents" ajoutée en tête + rappelée dans chaque section + exemples de mots à ne pas ASCII-fier. Origine côté n8n : le systemPrompt du node Code était écrit sans accents "par prudence JS", le LLM reproduisait ce style. (b) **Année inventée** (LLM écrivait "09/09/2023" alors que les notes disent "9 sept" sans année) -- règle "utilise l'année courante" ajoutée avec valeur explicite `2026` (à bumper manuellement en 2027). Miroir : workflow n8n `SB_WF10 v1.1.0` bumpé sur la même bascule (dr-context PR à venir).
 
 -> 1.0.0 -- 2026-09-08 (S133z) : création. Prompt CR-RDV formaté 2 colonnes, structure 4 sections, artefact réutilisable client. Défi Alegria Eva PRO semaine du 8/9.
