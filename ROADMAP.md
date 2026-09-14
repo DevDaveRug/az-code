@@ -1,8 +1,8 @@
 # ROADMAP az-code
 
-Version : 0.3.0
-Date : 2026-09-08
-Session : S133z-ccweb
+Version : 0.4.0
+Date : 2026-09-14
+Session : S135z-ccweb
 
 ## Ambition
 
@@ -20,7 +20,9 @@ Les défis Alegria ne renforcent pas tous le même produit. On distingue :
 
    -> **Brique N°2 -- cr-rdv-souverain** (livré S133z-ccweb, 2026-09-08 en v0.1) -- défi Eva PRO 8/9 : formatage automatique de CR de RDV en 2 colonnes via prompt LLM. Livrable central portable : `defis/cr-rdv-souverain/PROMPT_LLM.md`. Compagnon no-code : `az-no-code/defis/cr-rdv-formate/`.
 
-   -> **Brique N°3 -- [prochain défi]** -- à venir.
+   -> **Brique N°3 -- masterclass-inscriptions** (livré S135z-ccweb, 2026-09-14 en v0.1) -- défi Eva PRO 14/9 (semaine 38) : formulaire d'inscription à une masterclass + envoi automatique d'un email de confirmation personnalisé (prénom + date) dès qu'un inscrit est ajouté. Stack : Next.js 14 + Neon + Prisma + Resend. Compagnon no-code : `az-no-code/defis/masterclass-inscriptions/` (Airtable automation + NocoDB webhook -> n8n). Sert d'argument "brique email transactionnel souverain".
+
+   -> **Brique N°4 -- [prochain défi]** -- à venir.
 
 Pourquoi souverain :
 
@@ -183,6 +185,10 @@ Séquençage prévu : session S133c ou S134c selon dispo (après P4 skills tri c
 À arbitrer au fil des défis.
 
 ## Changelog
+
+-> 0.4.0 (2026-09-14, S135z-ccweb) : Brique N°3 (masterclass-inscriptions) livrée. Défi Alegria n°3 semaine 38 : formulaire inscription + envoi automatique email de confirmation personnalisé. Stack : Next.js 14 + Neon + Prisma + Resend. Placeholder "Brique N°4 -- à venir" décalé.
+
+-> 0.3.0 (2026-09-08, S133z-ccweb) : Brique N°2 (cr-rdv-souverain) livrée. Défi Eva PRO 8/9 : formatage CR RDV via prompt LLM.
 
 -> 0.2.0 (2026-09-03, S132c) : v0.2 enrichie (crm-souverain v0.2 -- multi-tables + relations). Tables cibles nommées (`SC_Entreprises`, `SC_Interactions`), FK Prisma détaillées, cascade explicitée, comportements calculés (Dernier contact auto), livrable démontrable défini. Séquençage post-P4.
 
