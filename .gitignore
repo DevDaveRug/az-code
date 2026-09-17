@@ -6,6 +6,11 @@ build/
 .env
 .env.local
 .env.*.local
+secrets.env
+secrets.env.local
+*.age
+!secrets.age
+age-keys.txt
 *.log
 .DS_Store
 Thumbs.db
