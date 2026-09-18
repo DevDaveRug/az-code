@@ -68,10 +68,13 @@ function log(icon, msg) {
 // Matching par Nom+Prenom, TLD .example (RFC 2606, jamais routable -- safe pour les
 // automations "recordCreated -> sendEmail" déclenchées par AZ_Inscrits).
 
+// Prénom/Nom ci-dessous DOIVENT matcher exactement les valeurs des records live
+// (vérifié via l'API S136z : le champ s'appelle 'Prénom' avec accent, et le record
+// Dubois porte 'Chloe' SANS accent malgré le nom du contact 'Chloé' dans les docs).
 const PROSPECTS = [
   { Prenom: 'Alice', Nom: 'Martin', Email: 'alice.martin@legrand.example', Entreprise: 'Cabinet Legrand' },
   { Prenom: 'Bob', Nom: 'Durand', Email: 'b.durand@techflow.example', Entreprise: 'TechFlow SAS' },
-  { Prenom: 'Chloé', Nom: 'Dubois', Email: 'c.dubois@zenith.example', Entreprise: 'Studio Zenith' },
+  { Prenom: 'Chloe', Nom: 'Dubois', Email: 'c.dubois@zenith.example', Entreprise: 'Studio Zenith' },
   { Prenom: 'Emma', Nom: 'Petit', Email: 'e.petit@marketpro.example', Entreprise: 'MarketPro' },
 ];
 
@@ -86,43 +89,69 @@ async function listRecords(tableName) {
   return data.records;
 }
 
-// --- Étape 1 : localiser (ou créer) le champ link source -> SC_Prospects --
+// --- Champ lien nommé, dans un sens ou dans l'autre -----------------------
+//
+// PIÈGE API Metadata (précisé empiriquement S136z, corrige l'hypothèse S135z) :
+// Airtable CRÉE bien le champ symétrique inverse automatiquement lors d'un POST
+// /fields de type multipleRecordLinks -- mais lui donne un nom générique dérivé
+// du nom de la table source (ex : 'SC_Prospects', ou 'SC_Prospects 2' en cas de
+// collision de nom). C'est CE nom moche/inattendu qui avait fait croire à S135z
+// que l'inverse n'était "pas auto-créé" : David a vu un champ au nom absurde et
+// l'a supprimé en pensant réparer un doublon, alors que c'était le vrai lien
+// symétrique. Il faut donc RENOMMER le champ auto-créé, jamais le supprimer
+// puis en recréer un autre à la main (ça duplique la paire).
+//
+// Cette fonction cherche D'ABORD par (type === multipleRecordLinks && linkedTableId),
+// PEU IMPORTE le nom actuel, et renomme si besoin. Ne crée un nouveau champ que si
+// aucun champ lié à cette table cible n'existe encore.
 
-async function ensureLinkField(table, fieldName, linkedTableId) {
-  const existing = table.fields.find((f) => f.name === fieldName);
-  if (existing) {
-    log('↷', `Champ '${fieldName}' déjà présent sur ${table.name}, skip.`);
-    return existing;
-  }
-  log('+', `Ajout du champ '${fieldName}' (Link -> SC_Prospects) sur ${table.name}…`);
-  if (DRY_RUN) {
-    log('◯', `[dry-run] ajout '${fieldName}' ignoré.`);
-    return { name: fieldName, id: 'fldDRYRUN' };
-  }
-  return airtable('POST', `/meta/bases/${BASE_ID}/tables/${table.id}/fields`, {
-    name: fieldName,
-    type: 'multipleRecordLinks',
-    options: { linkedTableId },
-  });
-}
+async function ensureNamedLinkField(table, desiredName, linkedTableId, linkedTableLabel) {
+  const wrongTypeSameName = table.fields.find(
+    (f) => f.name === desiredName && f.type !== 'multipleRecordLinks'
+  );
 
-// --- Étape 2 : champ symétrique inverse côté SC_Prospects (piège S135z) ---
-
-async function ensureInverseLink(scProspects, fieldName, linkedTableId, linkedTableName) {
-  const alreadyLinked = scProspects.fields.find(
+  const existingLink = table.fields.find(
     (f) => f.type === 'multipleRecordLinks' && f.options?.linkedTableId === linkedTableId
   );
-  if (alreadyLinked) {
-    log('↷', `SC_Prospects a déjà un champ lié à ${linkedTableName} ('${alreadyLinked.name}'), skip.`);
-    return alreadyLinked;
+
+  if (existingLink) {
+    if (existingLink.name === desiredName) {
+      log('↷', `Champ '${desiredName}' (Link -> ${linkedTableLabel}) déjà présent et bien nommé sur ${table.name}, skip.`);
+      return existingLink;
+    }
+    if (wrongTypeSameName) {
+      throw new Error(
+        `${table.name} a DEUX champs en conflit : '${existingLink.name}' (le vrai lien fonctionnel vers ${linkedTableLabel}) ` +
+        `ET '${desiredName}' (un artefact de type '${wrongTypeSameName.type}', probablement vide). Supprime manuellement ` +
+        `'${desiredName}' dans l'UI Airtable (clic droit sur la colonne -> Delete field) PUIS relance le script -- il renommera ` +
+        `'${existingLink.name}' en '${desiredName}' automatiquement.`
+      );
+    }
+    log('~', `Renommage du champ auto-créé '${existingLink.name}' -> '${desiredName}' sur ${table.name}…`);
+    if (DRY_RUN) {
+      log('◯', `[dry-run] renommage ignoré.`);
+      return { ...existingLink, name: desiredName };
+    }
+    return airtable('PATCH', `/meta/bases/${BASE_ID}/tables/${table.id}/fields/${existingLink.id}`, {
+      name: desiredName,
+    });
   }
-  log('+', `Ajout du champ inverse '${fieldName}' (Link -> ${linkedTableName}) sur SC_Prospects…`);
+
+  if (wrongTypeSameName) {
+    throw new Error(
+      `Champ '${desiredName}' sur ${table.name} existe mais est de type '${wrongTypeSameName.type}' au lieu de ` +
+      `'multipleRecordLinks' (artefact d'une création ratée -- ex : PAT sans les bons scopes à S135z). Supprime-le ` +
+      `manuellement dans l'UI Airtable (clic droit sur la colonne -> Delete field) puis relance le script.`
+    );
+  }
+
+  log('+', `Ajout du champ '${desiredName}' (Link -> ${linkedTableLabel}) sur ${table.name}…`);
   if (DRY_RUN) {
-    log('◯', `[dry-run] ajout inverse '${fieldName}' ignoré.`);
-    return { name: fieldName, id: 'fldDRYRUN' };
+    log('◯', `[dry-run] ajout '${desiredName}' ignoré.`);
+    return { name: desiredName, id: 'fldDRYRUN' };
   }
-  return airtable('POST', `/meta/bases/${BASE_ID}/tables/${scProspects.id}/fields`, {
-    name: fieldName,
+  return airtable('POST', `/meta/bases/${BASE_ID}/tables/${table.id}/fields`, {
+    name: desiredName,
     type: 'multipleRecordLinks',
     options: { linkedTableId },
   });
@@ -149,7 +178,7 @@ async function ensureExampleRecords(table, linkFieldName, buildFields, scProspec
   const toCreate = [];
   for (const prospect of PROSPECTS) {
     const scRecord = scProspectsRecords.find(
-      (r) => r.fields?.Prenom === prospect.Prenom && r.fields?.Nom === prospect.Nom
+      (r) => r.fields?.['Prénom'] === prospect.Prenom && r.fields?.Nom === prospect.Nom
     );
     if (!scRecord) {
       log('!', `Prospect ${prospect.Prenom} ${prospect.Nom} introuvable dans SC_Prospects, skip.`);
@@ -201,8 +230,8 @@ async function main() {
   // --- AZ_Inscrits (défi 3) ---
   const azInscrits = schema.find((t) => t.name === 'AZ_Inscrits');
   if (azInscrits) {
-    await ensureLinkField(azInscrits, 'LinkedProspect', scProspects.id);
-    await ensureInverseLink(scProspects, 'Projets_liés', azInscrits.id, 'AZ_Inscrits');
+    await ensureNamedLinkField(scProspects, 'Projets_liés', azInscrits.id, 'AZ_Inscrits');
+    await ensureNamedLinkField(azInscrits, 'LinkedProspect', scProspects.id, 'SC_Prospects');
     await ensureExampleRecords(
       azInscrits,
       'LinkedProspect',
@@ -222,8 +251,8 @@ async function main() {
   // --- SC_CRs_de_RDV (défi 2) ---
   const scCrsDeRdv = schema.find((t) => t.name === 'SC_CRs_de_RDV');
   if (scCrsDeRdv) {
-    await ensureLinkField(scCrsDeRdv, 'Prospect', scProspects.id);
-    await ensureInverseLink(scProspects, 'CRs_de_RDV_liés', scCrsDeRdv.id, 'SC_CRs_de_RDV');
+    await ensureNamedLinkField(scProspects, 'SC_CRs_de_RDV', scCrsDeRdv.id, 'SC_CRs_de_RDV');
+    await ensureNamedLinkField(scCrsDeRdv, 'Prospect', scProspects.id, 'SC_Prospects');
     await ensureExampleRecords(
       scCrsDeRdv,
       'Prospect',
