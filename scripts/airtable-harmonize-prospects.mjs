@@ -114,18 +114,31 @@ async function ensureNamedLinkField(table, desiredName, linkedTableId, linkedTab
     (f) => f.type === 'multipleRecordLinks' && f.options?.linkedTableId === linkedTableId
   );
 
+  // Si un champ au nom voulu existe mais avec le mauvais type (artefact ratée),
+  // ne JAMAIS le supprimer (il peut contenir de vraies données texte saisies à la
+  // main). On le pousse de côté en renommant en '<nom>_ancien_texte' -- non
+  // destructif, David peut migrer/nettoyer les données à son rythme.
+  if (wrongTypeSameName) {
+    const backupName = `${desiredName}_ancien_texte`;
+    const backupAlreadyExists = table.fields.some((f) => f.name === backupName);
+    if (!backupAlreadyExists) {
+      log('~', `Champ '${desiredName}' existant est de type '${wrongTypeSameName.type}' (contient des données) -- renommage non destructif en '${backupName}' sur ${table.name}…`);
+      if (!DRY_RUN) {
+        await airtable('PATCH', `/meta/bases/${BASE_ID}/tables/${table.id}/fields/${wrongTypeSameName.id}`, {
+          name: backupName,
+        });
+      } else {
+        log('◯', `[dry-run] renommage de sauvegarde ignoré.`);
+      }
+    } else {
+      log('↷', `'${backupName}' existe déjà (renommage de sauvegarde déjà fait), skip.`);
+    }
+  }
+
   if (existingLink) {
     if (existingLink.name === desiredName) {
       log('↷', `Champ '${desiredName}' (Link -> ${linkedTableLabel}) déjà présent et bien nommé sur ${table.name}, skip.`);
       return existingLink;
-    }
-    if (wrongTypeSameName) {
-      throw new Error(
-        `${table.name} a DEUX champs en conflit : '${existingLink.name}' (le vrai lien fonctionnel vers ${linkedTableLabel}) ` +
-        `ET '${desiredName}' (un artefact de type '${wrongTypeSameName.type}', probablement vide). Supprime manuellement ` +
-        `'${desiredName}' dans l'UI Airtable (clic droit sur la colonne -> Delete field) PUIS relance le script -- il renommera ` +
-        `'${existingLink.name}' en '${desiredName}' automatiquement.`
-      );
     }
     log('~', `Renommage du champ auto-créé '${existingLink.name}' -> '${desiredName}' sur ${table.name}…`);
     if (DRY_RUN) {
@@ -135,14 +148,6 @@ async function ensureNamedLinkField(table, desiredName, linkedTableId, linkedTab
     return airtable('PATCH', `/meta/bases/${BASE_ID}/tables/${table.id}/fields/${existingLink.id}`, {
       name: desiredName,
     });
-  }
-
-  if (wrongTypeSameName) {
-    throw new Error(
-      `Champ '${desiredName}' sur ${table.name} existe mais est de type '${wrongTypeSameName.type}' au lieu de ` +
-      `'multipleRecordLinks' (artefact d'une création ratée -- ex : PAT sans les bons scopes à S135z). Supprime-le ` +
-      `manuellement dans l'UI Airtable (clic droit sur la colonne -> Delete field) puis relance le script.`
-    );
   }
 
   log('+', `Ajout du champ '${desiredName}' (Link -> ${linkedTableLabel}) sur ${table.name}…`);
