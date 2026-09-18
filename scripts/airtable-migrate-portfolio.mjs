@@ -242,8 +242,12 @@ async function applyScProspectsPattern(schema) {
   // Sur SC_Prospects : ajouter les champs de rollup pour visualiser les projets liés
   const existingScFields = new Set(scProspects.fields.map((f) => f.name));
   const scNewFields = [
-    // Le champ inverse est auto-créé par Airtable lors de la création du link côté AZ_Inscrits.
-    // On ajoute donc un champ Count (nombre de projets liés) et Origines (liste des slugs).
+    // PIÈGE API Metadata (confirmé empiriquement S135z) : le champ symétrique inverse
+    // N'EST PAS auto-créé par Airtable lors d'un POST /fields côté source (ici AZ_Inscrits).
+    // Il faut le créer explicitement par un second POST côté cible (SC_Prospects) -- voir
+    // az-code/scripts/airtable-harmonize-prospects.mjs pour le pattern complet (champ
+    // 'Projets_liés' côté SC_Prospects <-> 'LinkedProspect' côté AZ_Inscrits).
+    // On ajoute ensuite un champ Count (nombre de projets liés) et Origines (liste des slugs).
     // Note : ces champs de type Count / Rollup ne peuvent être créés via l'API que si les champs liés existent déjà.
     // On les liste ici comme rappel pour création manuelle après le premier link.
   ];
