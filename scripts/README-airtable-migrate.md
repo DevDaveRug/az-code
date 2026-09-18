@@ -40,68 +40,28 @@ Non-destructif : n'ajoute que les champs et records manquants, ne renomme rien, 
 
 -> Génération d'un PAT : https://airtable.com/create/tokens -> `Create new token` -> cocher les 4 scopes -> ajouter la base en `Access`. Le token commence par `pat...` (~80 caractères).
 
-## Trois méthodes d'injection du PAT
+## Injection du PAT -- flow unique Bw + age decrypt live (S136z-ccdd)
 
-Le script lit `process.env.AIRTABLE_PAT`. C'est à toi de l'injecter juste avant l'exécution. Trois méthodes, du plus simple au plus souverain :
+**MAJ S136z-ccdd** : `secrets.env` local n'existe plus (décision finale David, un seul système de secrets). Le PAT s'injecte désormais via le pipeline Bw + age decrypt live documenté dans `dr-context/docs/DR/DR_Professionnel/Pr_Outils/260817_PrOu_Protocole-Secrets.md` Section VII.
 
-### Méthode 1 -- `secrets.env` (le plus simple)
-
-Fichier `secrets.env` (à ne PAS committer, déjà couvert par `.gitignore` du repo) :
+Résumé (à lancer en **PowerShell 7 (x64), profil vert**) :
 
 ```
-AIRTABLE_PAT=pat14CExxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+bw unlock --raw
+$env:BW_SESSION = "<token>"
+bw get notes "age keys.txt dr-secrets" --session $env:BW_SESSION | Out-File -Encoding utf8NoBOM -NoNewline C:\Users\conta\Documents\age-tmp.key
+age -d -i C:\Users\conta\Documents\age-tmp.key C:\Users\conta\dev\dr-secrets\secrets.env.age > C:\Users\conta\Documents\secrets-tmp.env
+Remove-Item C:\Users\conta\Documents\age-tmp.key
 ```
 
-Exécution :
+Puis, dans ce même shell, lire `AIRTABLE_PAT` depuis `secrets-tmp.env` et l'injecter avant le script :
 
 ```bash
 cd /c/Users/conta/dev/az-code
-export $(grep -v '^#' secrets.env | xargs) && node scripts/airtable-migrate-portfolio.mjs
+AIRTABLE_PAT=$(grep '^AIRTABLE_PAT=' /c/Users/conta/Documents/secrets-tmp.env | cut -d= -f2) node scripts/airtable-migrate-portfolio.mjs
 ```
 
-Ou dans un one-liner :
-
-```bash
-AIRTABLE_PAT=pat14CE... node scripts/airtable-migrate-portfolio.mjs
-```
-
-### Méthode 2 -- Bitwarden CLI (`bw`)
-
-Prérequis : Bitwarden CLI installé + session déverrouillée (`bw unlock`).
-
-Une seule fois, stocker le PAT dans Bitwarden :
-
-```bash
-echo '{"name":"airtable-sc-souverain","type":2,"secureNote":{"type":0},"notes":"pat14CE..."}' | bw encode | bw create item
-# ou plus simple via l'UI Bitwarden : nouvelle Secure Note nommée "airtable-sc-souverain", champ notes = le PAT
-```
-
-Exécution :
-
-```bash
-cd /c/Users/conta/dev/az-code
-AIRTABLE_PAT=$(bw get notes airtable-sc-souverain) node scripts/airtable-migrate-portfolio.mjs
-```
-
-### Méthode 3 -- age (souverain, versionnable)
-
-Prérequis : `age` installé (`https://age-encryption.org`) + clé privée dans `~/.config/age/keys.txt`.
-
-Une seule fois, chiffrer un fichier `secrets.age` qui contient `AIRTABLE_PAT=...` :
-
-```bash
-echo "AIRTABLE_PAT=pat14CE..." > /tmp/secrets.plain
-age -r "age1..." -o secrets.age /tmp/secrets.plain
-rm /tmp/secrets.plain
-# secrets.age est chiffré, versionnable en git safe
-```
-
-Exécution :
-
-```bash
-cd /c/Users/conta/dev/az-code
-AIRTABLE_PAT=$(age -d -i ~/.config/age/keys.txt secrets.age | grep AIRTABLE_PAT | cut -d= -f2) node scripts/airtable-migrate-portfolio.mjs
-```
+Fin de session : `Remove-Item C:\Users\conta\Documents\secrets-tmp.env`.
 
 ## Modes d'exécution
 
@@ -195,5 +155,7 @@ Ce script est le squelette. Pour un futur projet 4 qui ajoute une nouvelle table
 -> 3- Si la table doit être liée à `SC_Prospects`, le pattern `--with-sc-prospects-pattern` s'applique automatiquement (le script parcourt toutes les tables projet et ajoute le champ `LinkedProspect`)
 
 ## Changelog
+
+-> 1.1.0 -- 2026-09-18 (S136z-ccdd) : section injection PAT réécrite -- flow unique Bw + age decrypt live (`secrets.env` local supprimé, décision finale David sur le doublon de systèmes de secrets). Référence au nouveau script `airtable-harmonize-prospects.mjs` (P1 backlog S136z).
 
 -> 1.0.0 -- 2026-09-17 -- création (S135z-ccweb, Val David Option A) : script idempotent de migration AZ_Portfolio + pattern SC_Prospects optionnel. Sourcé sur l'API Airtable Metadata publique (v0, septembre 2026). Gestion PAT via 3 méthodes documentées (secrets.env / Bitwarden / age).
