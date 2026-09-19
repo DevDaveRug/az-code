@@ -87,8 +87,16 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
-  const inscrits = await prisma.inscrit.findMany({
-    orderBy: [{ dateMasterclass: "asc" }, { dateInscription: "asc" }],
-  });
-  return NextResponse.json(inscrits);
+  try {
+    const inscrits = await prisma.inscrit.findMany({
+      orderBy: [{ dateMasterclass: "asc" }, { dateInscription: "asc" }],
+    });
+    return NextResponse.json(inscrits);
+  } catch (e) {
+    // DEBUG TEMPORAIRE S136z -- a retirer une fois le 500 diagnostique.
+    return NextResponse.json(
+      { debugError: e instanceof Error ? e.message : String(e), debugStack: e instanceof Error ? e.stack : null },
+      { status: 500 }
+    );
+  }
 }
