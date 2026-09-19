@@ -221,6 +221,46 @@ async function ensureExampleRecords(table, linkFieldName, buildFields, scProspec
   await airtable('POST', `/${BASE_ID}/${encoded}`, { records: toCreate.map((fields) => ({ fields })) });
 }
 
+// --- Détection de conflit (jamais d'écrasement automatique) ---------------
+//
+// Cor David S136z : "il faut un mécanisme pour comparer et valider
+// manuellement ce qu'on conserve et ce qui est archivé dans les 'notes' du
+// prospect sans jamais écraser les infos". Compare un champ entre SC_Prospects
+// et une table projet liée ; en cas de désaccord, ANNEXE une note (ne réécrit
+// jamais un champ de données), idempotent (ne renote pas deux fois le même
+// conflit).
+
+async function checkFieldConsistency(scProspects, scProspectsRecords, otherTable, otherRecords, linkFieldName, fieldName) {
+  // Pour chaque record de la table projet ayant un lien vers SC_Prospects,
+  // comparer le champ fieldName avec le même champ côté SC_Prospects.
+  for (const otherRecord of otherRecords) {
+    const linkedScIds = otherRecord.fields?.[linkFieldName];
+    if (!linkedScIds || linkedScIds.length === 0) continue;
+    const scRecord = scProspectsRecords.find((r) => r.id === linkedScIds[0]);
+    if (!scRecord) continue;
+    const scValue = scRecord.fields?.[fieldName];
+    const otherValue = otherRecord.fields?.[fieldName];
+    if (!scValue || !otherValue || scValue === otherValue) continue;
+
+    const conflictTag = `CONFLIT ${fieldName.toUpperCase()} (${otherTable.name})`;
+    const existingNotes = scRecord.fields?.Notes || '';
+    if (existingNotes.includes(conflictTag)) continue; // déjà signalé, idempotent
+
+    const alert = `${conflictTag} détecté ${new Date().toISOString().slice(0, 10)} : ` +
+      `SC_Prospects.${fieldName} = ${scValue}, mais ${otherTable.name}.${fieldName} = ${otherValue}. ` +
+      `Aucune valeur écrasée automatiquement -- David décide laquelle est la bonne et corrige manuellement.`;
+    log('!', `${conflictTag} pour ${scRecord.fields?.['Prénom']} ${scRecord.fields?.Nom} -- note ajoutée, rien écrasé.`);
+    if (!DRY_RUN) {
+      const newNotes = existingNotes ? `${existingNotes}\n\n${alert}` : alert;
+      await airtable('PATCH', `/${BASE_ID}/${encodeURIComponent('SC_Prospects')}/${scRecord.id}`, {
+        fields: { Notes: newNotes },
+      });
+    } else {
+      log('◯', '[dry-run] note de conflit ignorée.');
+    }
+  }
+}
+
 // --- Flow principal ---------------------------------------------------------
 
 async function main() {
@@ -269,6 +309,11 @@ async function main() {
       }),
       scProspectsRecords
     );
+    if (!DRY_RUN) {
+      const freshScProspects = await listRecords('SC_Prospects');
+      const freshAzInscrits = await listRecords('AZ_Inscrits');
+      await checkFieldConsistency(scProspects, freshScProspects, azInscrits, freshAzInscrits, 'LinkedProspect', 'Email');
+    }
   } else {
     log('!', 'Table AZ_Inscrits introuvable, skip.');
   }
