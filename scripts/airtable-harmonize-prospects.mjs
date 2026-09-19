@@ -162,6 +162,22 @@ async function ensureNamedLinkField(table, desiredName, linkedTableId, linkedTab
   });
 }
 
+async function ensureTextField(table, fieldName) {
+  if (table.fields.some((f) => f.name === fieldName)) {
+    log('↷', `Champ '${fieldName}' déjà présent sur ${table.name}, skip.`);
+    return;
+  }
+  log('+', `Ajout du champ texte '${fieldName}' sur ${table.name}…`);
+  if (DRY_RUN) {
+    log('◯', `[dry-run] ajout '${fieldName}' ignoré.`);
+    return;
+  }
+  await airtable('POST', `/meta/bases/${BASE_ID}/tables/${table.id}/fields`, {
+    name: fieldName,
+    type: 'singleLineText',
+  });
+}
+
 // --- Étape 3 : peupler avec des records exemples liés aux 4 prospects -----
 
 async function ensureExampleRecords(table, linkFieldName, buildFields, scProspectsRecords) {
@@ -237,11 +253,15 @@ async function main() {
   if (azInscrits) {
     await ensureNamedLinkField(scProspects, 'Projets_liés', azInscrits.id, 'AZ_Inscrits');
     await ensureNamedLinkField(azInscrits, 'LinkedProspect', scProspects.id, 'SC_Prospects');
+    await ensureTextField(azInscrits, 'Nom');
+    await ensureTextField(azInscrits, 'Entreprise');
     await ensureExampleRecords(
       azInscrits,
       'LinkedProspect',
       (p) => ({
         Prenom: p.Prenom,
+        Nom: p.Nom,
+        Entreprise: p.Entreprise,
         Email: p.Email,
         DateMasterclass: new Date().toISOString().slice(0, 10),
         StatutEmail: 'En attente',
@@ -263,7 +283,12 @@ async function main() {
       'Prospect',
       (p) => ({
         'Notes brutes': `Exemple généré par airtable-harmonize-prospects.mjs (S136z) -- RDV fictif avec ${p.Prenom} ${p.Nom} (${p.Entreprise}).`,
-        Interlocuteur: `${p.Prenom} ${p.Nom}`,
+        Interlocuteur: `${p.Prenom} ${p.Nom} (${p.Entreprise})`,
+        // 'Date RDV' est OBLIGATOIRE : la formule 'Nom' de cette table fait
+        // DATETIME_FORMAT({Date RDV}, ...) et renvoie #ERROR! si le champ est vide
+        // (bug reproduit S136z sur les 4 premiers records générés par ce script,
+        // corrigé manuellement après coup -- ne plus jamais omettre ce champ).
+        'Date RDV': new Date().toISOString(),
         Sujet: 'Exemple portfolio -- pas un vrai CR',
         Statut: 'Formaté',
         'CR formaté': `**Exemple portfolio.** Ce record démontre le lien Prospect <-> SC_CRs_de_RDV pour ${p.Prenom} ${p.Nom}.`,
