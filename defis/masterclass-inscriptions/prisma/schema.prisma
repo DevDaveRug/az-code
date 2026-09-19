@@ -2,18 +2,25 @@
 // Défi Alegria n°3 semaine 38. Stack aligné LIA'M : Neon PostgreSQL, Prisma client, migrations via `prisma db push` sur Vercel.
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  // Schéma isolé dans le projet Neon partagé "Sales Closer Souverain" (S136z) --
+  // même base que défi 2 (cr-rdv-souverain), mais table dans son propre schéma
+  // Postgres pour ne jamais entrer en collision avec les tables d'un autre défi.
+  schemas  = ["masterclass"]
 }
 
 enum StatutEmail {
   EN_ATTENTE
   ENVOYE
   ERREUR
+
+  @@schema("masterclass")
 }
 
 model Inscrit {
@@ -29,4 +36,5 @@ model Inscrit {
   @@index([dateMasterclass])
   @@index([statutEmail])
   @@map("az_inscrits")
+  @@schema("masterclass")
 }
