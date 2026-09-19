@@ -1,6 +1,6 @@
 {
   "name": "masterclass-inscriptions",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Défi Alegria n°3 (S38) - MVP Next.js pour gérer des inscriptions à une masterclass avec envoi automatique d'email de confirmation via Resend. Next.js 14 + Neon + Prisma + Tailwind.",
   "scripts": {
