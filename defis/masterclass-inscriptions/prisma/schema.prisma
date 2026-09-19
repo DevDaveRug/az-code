@@ -4,6 +4,9 @@
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["multiSchema"]
+  // Requis pour Vercel (fonctions serverless) : le moteur "native" généré au build
+  // ne correspond pas toujours à l'environnement d'exécution réel des fonctions.
+  binaryTargets   = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
