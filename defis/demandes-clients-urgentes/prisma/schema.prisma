@@ -1,0 +1,69 @@
+// Demandes clients urgentes - Prisma schema v0.1
+// Defi Alegria n°4 semaine 39. Stack aligne LIA'M : Neon PostgreSQL, Prisma client, migrations via `prisma db push` sur Vercel.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+  binaryTargets   = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // Schema isole dans le projet Neon partage "Sales Closer Souverain" (pattern S136z P4)
+  // pour ne jamais entrer en collision avec les tables d'un autre defi.
+  schemas  = ["demandes"]
+}
+
+enum Urgence {
+  BASSE
+  MOYENNE
+  HAUTE
+  CRITIQUE
+
+  @@schema("demandes")
+}
+
+enum Statut {
+  NOUVEAU
+  EN_COURS
+  BLOQUE
+  FAIT
+
+  @@schema("demandes")
+}
+
+model Client {
+  id           Int       @id @default(autoincrement())
+  nom          String
+  email        String    @unique
+  telephone    String?
+  dateCreation DateTime  @default(now())                @map("date_creation")
+  demandes     Demande[]
+
+  @@map("clients")
+  @@schema("demandes")
+}
+
+model Demande {
+  id                  Int       @id @default(autoincrement())
+  ref                 String    @unique                                                @default(cuid())
+  clientId            Int?      @map("client_id")
+  client              Client?   @relation(fields: [clientId], references: [id])
+  dateDemande         DateTime  @default(now())                                        @map("date_demande")
+  description         String    @db.Text
+  urgenceClient       Urgence   @default(MOYENNE)                                       @map("urgence_client")
+  urgenceReelle       Urgence   @default(MOYENNE)                                       @map("urgence_reelle")
+  statut              Statut    @default(NOUVEAU)
+  commentaires        String?   @db.Text
+  dateTraitement      DateTime? @map("date_traitement")
+  nomClientTemp       String    @map("nom_client_temp")
+  emailClientTemp     String    @map("email_client_temp")
+  telephoneClientTemp String?   @map("telephone_client_temp")
+
+  @@index([urgenceReelle, dateDemande(sort: Desc)])
+  @@index([statut])
+  @@index([emailClientTemp])
+  @@map("demandes")
+  @@schema("demandes")
+}
