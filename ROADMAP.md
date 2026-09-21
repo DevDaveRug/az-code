@@ -1,8 +1,8 @@
 # ROADMAP az-code
 
-Version : 0.4.0
-Date : 2026-09-14
-Session : S135z-ccweb
+Version : 0.5.0
+Date : 2026-09-21
+Session : S137z-ccdd
 
 ## Ambition
 
@@ -22,7 +22,9 @@ Les défis Alegria ne renforcent pas tous le même produit. On distingue :
 
    -> **Brique N°3 -- masterclass-inscriptions** (livré S135z-ccweb, 2026-09-14 en v0.1) -- défi Eva PRO 14/9 (semaine 38) : formulaire d'inscription à une masterclass + envoi automatique d'un email de confirmation personnalisé (prénom + date) dès qu'un inscrit est ajouté. Stack : Next.js 14 + Neon + Prisma + Resend. Compagnon no-code : `az-no-code/defis/masterclass-inscriptions/` (Airtable automation + NocoDB webhook -> n8n). Sert d'argument "brique email transactionnel souverain".
 
-   -> **Brique N°4 -- [prochain défi]** -- à venir.
+   -> **Brique N°4 -- demandes-clients-urgentes** (livré S137z-ccdd, 2026-09-21 en v0.1) -- défi Alegria 21/09 (semaine 39) : formulaire partageable de saisie de demandes clients avec vue triée par urgence, pour un freelance qui perd la moitié des demandes reçues par plusieurs canaux (mail, WA, SMS). Stack : Next.js 14 + Neon (schema `demandes` isolé, pattern S136z P4) + Prisma + Resend + Telegram Bot. Compagnon no-code : `az-no-code/defis/demandes-clients-urgentes/` (Airtable 2 tables liées + automation matching client par email + Interface Dashboard + NocoDB miroir). Sert d'argument "brique ticketing souverain avec formulaire public partageable".
+
+   -> **Brique N°5 -- [prochain défi]** -- à venir.
 
 Pourquoi souverain :
 
