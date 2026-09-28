@@ -1,0 +1,60 @@
+// Missions et CA par client - Prisma schema v0.1
+// Defi Alegria n°5 semaine 40 (base "qui part en vrille"). Stack aligne LIA'M : Neon PostgreSQL, Prisma client, `prisma db push` sur Vercel.
+// Le schema reprend la structure cible du diagnostic : 2 tables reliees, chaque champ avec son vrai type.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+  binaryTargets   = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // Schema isole dans le projet Neon partage "Sales Closer Souverain" (pattern S136z P4)
+  schemas  = ["missions"]
+}
+
+enum StatutMission {
+  A_FAIRE
+  EN_COURS
+  TERMINEE
+  ARRETEE
+
+  @@schema("missions")
+}
+
+model Client {
+  id             Int       @id @default(autoincrement())
+  // Personne (Alice Martin) ou entreprise (TechFlow SAS) : le client qui paie
+  nom            String
+  // Interlocuteur quand le client est une entreprise
+  contact        String?
+  // Cle metier : un client = un e-mail, jamais retape sur chaque mission
+  email          String    @unique
+  telephone      String?
+  notesMigration String?   @map("notes_migration") @db.Text
+  dateCreation   DateTime  @default(now()) @map("date_creation")
+  missions       Mission[]
+
+  @@map("clients")
+  @@schema("missions")
+}
+
+model Mission {
+  id             Int           @id @default(autoincrement())
+  intitule       String
+  clientId       Int           @map("client_id")
+  client         Client        @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  statut         StatutMission @default(A_FAIRE)
+  montant        Decimal       @db.Decimal(12, 2)
+  dateFin        DateTime?     @map("date_fin") @db.Date
+  facture        Boolean       @default(false)
+  notesMigration String?       @map("notes_migration") @db.Text
+  dateCreation   DateTime      @default(now()) @map("date_creation")
+
+  @@index([clientId])
+  @@index([statut, facture])
+  @@map("missions")
+  @@schema("missions")
+}

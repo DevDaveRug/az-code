@@ -1,8 +1,8 @@
 # ROADMAP az-code
 
-Version : 0.5.0
-Date : 2026-09-21
-Session : S137z-ccdd
+Version : 0.6.0
+Date : 2026-09-28
+Session : S163z-ccweb
 
 ## Ambition
 
@@ -24,7 +24,9 @@ Les défis Alegria ne renforcent pas tous le même produit. On distingue :
 
    -> **Brique N°4 -- demandes-clients-urgentes** (livré S137z-ccdd, 2026-09-21 en v0.1) -- défi Alegria 21/09 (semaine 39) : formulaire partageable de saisie de demandes clients avec vue triée par urgence, pour un freelance qui perd la moitié des demandes reçues par plusieurs canaux (mail, WA, SMS). Stack : Next.js 14 + Neon (schema `demandes` isolé, pattern S136z P4) + Prisma + Resend + Telegram Bot. Compagnon no-code : `az-no-code/defis/demandes-clients-urgentes/` (Airtable 2 tables liées + automation matching client par email + Interface Dashboard + NocoDB miroir). Sert d'argument "brique ticketing souverain avec formulaire public partageable".
 
-   -> **Brique N°5 -- [prochain défi]** -- à venir.
+   -> **Brique N°5 -- missions-ca-par-client** (livré S163z-ccweb, 2026-09-28 en v0.1) -- défi Alegria 28/09 (semaine 40) : diagnostic d'une base Airtable « qui part en vrille » (7 colonnes en texte, clients retapés, CA par client impossible) et structure cible en 2 tables liées. Stack : Next.js 14 + Neon (schema `missions` isolé) + Prisma. Le seed rejoue la migration « avant -> après » avec des règles de nettoyage testées (`src/lib/nettoyage.ts`, 9 tests `node:test`) : montants, statuts, dates incomplètes, rapprochement client par e-mail, doublons possibles signalés sans suppression. Compagnon no-code : `az-no-code/defis/missions-ca-par-client/` (réutilise `AZ_Clients` de la base unifiée + `AZ_Missions`, cumuls CA). Sert d'argument « brique audit + migration de base existante » : le premier livrable d'un client qui a déjà un outil bancal.
+
+   -> **Brique N°6 -- [prochain défi]** -- à venir.
 
 Pourquoi souverain :
 
@@ -187,6 +189,8 @@ Séquençage prévu : session S133c ou S134c selon dispo (après P4 skills tri c
 À arbitrer au fil des défis.
 
 ## Changelog
+
+-> 0.6.0 (2026-09-28, S163z-ccweb) : Brique N°5 (missions-ca-par-client) livrée. Défi Alegria n°5 semaine 40 : diagnostic + restructuration d'une base de missions, migration testée. Placeholder "Brique N°6 -- à venir" décalé. (La 0.5.0 du 21/09, Brique N°4, n'avait pas d'entrée de changelog.)
 
 -> 0.4.0 (2026-09-14, S135z-ccweb) : Brique N°3 (masterclass-inscriptions) livrée. Défi Alegria n°3 semaine 38 : formulaire inscription + envoi automatique email de confirmation personnalisé. Stack : Next.js 14 + Neon + Prisma + Resend. Placeholder "Brique N°4 -- à venir" décalé.
 
