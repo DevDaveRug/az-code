@@ -1,4 +1,4 @@
 {
-  "buildCommand": "prisma generate && prisma db push && next build",
+  "buildCommand": "prisma generate && if [ \"$VERCEL_ENV\" = \"production\" ]; then prisma db push; else echo \"prisma db push ignore hors production ($VERCEL_ENV)\"; fi && next build",
   "framework": "nextjs"
 }
