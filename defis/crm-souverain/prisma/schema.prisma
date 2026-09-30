@@ -1,14 +1,18 @@
-// CRM Souverain - Prisma schema v0.2
+// CRM Souverain - Prisma schema v0.3
 // Aligné sur le stack LIA'M : Neon PostgreSQL, Prisma client, migrations gérées via `prisma db push` sur Vercel.
 // v0.2 : multi-tables (SC_Entreprises + SC_Interactions) + relations FK propres.
+// v0.3 : schéma isolé `crm` dans le projet Neon partagé "Sales Closer Souverain" (pattern S136z P4, S163z).
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  // `db push` ne gère que ce schéma : les tables des autres projets de la base partagée restent hors de portée
+  schemas  = ["crm"]
 }
 
 enum Statut {
@@ -16,6 +20,8 @@ enum Statut {
   EN_COURS
   GAGNE
   PERDU
+
+  @@schema("crm")
 }
 
 enum Source {
@@ -23,6 +29,8 @@ enum Source {
   RECOMMANDATION
   SITE
   AUTRE
+
+  @@schema("crm")
 }
 
 enum TypeInteraction {
@@ -32,6 +40,8 @@ enum TypeInteraction {
   WA
   RDV
   AUTRE
+
+  @@schema("crm")
 }
 
 model Entreprise {
@@ -50,6 +60,7 @@ model Entreprise {
 
   @@index([nom])
   @@map("sc_entreprises")
+  @@schema("crm")
 }
 
 model Prospect {
@@ -76,6 +87,7 @@ model Prospect {
   @@index([dateEntree])
   @@index([entrepriseId])
   @@map("sc_prospects")
+  @@schema("crm")
 }
 
 model Interaction {
@@ -93,4 +105,5 @@ model Interaction {
 
   @@index([prospectId, date])
   @@map("sc_interactions")
+  @@schema("crm")
 }

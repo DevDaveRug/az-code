@@ -59,6 +59,8 @@ npm run dev
 
 -> Copier la connection string avec pooler (finit par `-pooler.aws.neon.tech`)
 
+-> Depuis la v0.3, les tables vivent dans le schéma Postgres `crm` (`@@schema("crm")` dans `prisma/schema.prisma`). Ajouter `&schema=crm` à la fin de la connection string. Une même base Neon peut ainsi héberger plusieurs projets, chacun dans son schéma, sans que `prisma db push` ne touche aux tables des autres
+
 ### 2. Importer sur Vercel
 
 -> Aller sur https://vercel.com/new
@@ -69,7 +71,7 @@ npm run dev
 
 -> Framework preset : Next.js (auto-détecté)
 
--> Environment Variables : `DATABASE_URL` = la connection string Neon
+-> Environment Variables : `DATABASE_URL` = la connection string Neon, en environnement Production uniquement (`prisma db push` ne tourne qu'en production, voir `vercel.json`)
 
 -> Deploy
 
