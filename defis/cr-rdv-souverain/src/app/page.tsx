@@ -3,6 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { formatterViaN8n } from "@/lib/n8n-format";
 import { redirect } from "next/navigation";
 
+// Cette page liste les CR lus en base : elle doit etre rendue a la demande.
+// Sans cette directive Next la prerend a la construction, ce qui a deux effets :
+// la liste affichee en production reste figee au dernier deploiement, et le build
+// echoue des que la base n'est pas joignable (cas des previews, qui n'ont plus
+// DATABASE_URL depuis le 17/10). Les trois autres projets qui lisent la base
+// portent deja cette directive.
+export const dynamic = "force-dynamic";
+
 async function creerCr(formData: FormData) {
   "use server";
 
