@@ -5,14 +5,21 @@
 // et les métadonnées extraites (date, interlocuteur, sujet) pour recherche/tri.
 //
 // v0.2 (roadmap) : ajout prospectId nullable -> FK optionnelle vers crm-souverain (REST HTTP cross-app).
+//
+// v0.3 : schema isole `cr`, pour aligner ce projet sur les quatre autres (`crm`, `demandes`,
+// `masterclass`, `missions`). Il etait le seul a vivre dans `public`.
+// ATTENTION : ce changement ne se deploie pas seul, voir MIGRATION-SCHEMA-CR.md.
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  // `db push` ne gere que ce schema : les tables des autres projets de la base partagee restent hors de portee
+  schemas  = ["cr"]
 }
 
 model Cr {
@@ -40,4 +47,5 @@ model Cr {
   @@index([createdAt(sort: Desc)])
   @@index([dateRdv(sort: Desc)])
   @@map("cr")
+  @@schema("cr")
 }
