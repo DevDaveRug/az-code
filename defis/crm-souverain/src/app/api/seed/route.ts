@@ -1,14 +1,45 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { Statut, Source, TypeInteraction } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs"; // timingSafeEqual n'existe pas sur le runtime edge
+
+// Garde du seed.
+// Cette route vide trois tables avant de repeupler : sans secret, n'importe qui
+// connaissant l'URL efface la démo en ligne. Le secret se pose dans SEED_SECRET
+// et se présente dans l'en-tête x-seed-secret.
+// Ferme par défaut : SEED_SECRET absent = route inutilisable, jamais ouverte.
+function secretValide(req: NextRequest): boolean {
+  const attendu = process.env.SEED_SECRET;
+  if (!attendu) return false;
+  const recu = Buffer.from(req.headers.get("x-seed-secret") ?? "");
+  const reference = Buffer.from(attendu);
+  // timingSafeEqual exige deux tampons de même longueur.
+  if (recu.length !== reference.length) return false;
+  return timingSafeEqual(recu, reference);
+}
 
 // POST /api/seed
 // Reset + repopulate : 4 entreprises + 4 prospects + interactions historisées.
 // Idempotent : safe to call multiple times.
 // v0.2 : ajoute les entreprises (FK) et interactions (log chronologique).
-export async function POST() {
+// v0.3 : protégée par SEED_SECRET ; le GET destructif est supprimé.
+export async function POST(req: NextRequest) {
+  if (!process.env.SEED_SECRET) {
+    return NextResponse.json(
+      { ok: false, erreur: "SEED_SECRET n'est pas configuré : le seed est désactivé." },
+      { status: 503 }
+    );
+  }
+  if (!secretValide(req)) {
+    return NextResponse.json(
+      { ok: false, erreur: "Secret de seed absent ou invalide (en-tête x-seed-secret)." },
+      { status: 401 }
+    );
+  }
+
   // Ordre de suppression : reverse FK (Interaction dépend de Prospect qui dépend de Entreprise).
   await prisma.interaction.deleteMany();
   await prisma.prospect.deleteMany();
@@ -129,7 +160,12 @@ export async function POST() {
   }, { status: 200 });
 }
 
-// GET /api/seed - same as POST for convenience (curl without -X)
+// GET /api/seed : retiré.
+// Il appelait POST, donc une simple visite de navigateur, une prévisualisation
+// de lien ou un robot d'indexation vidait la base. Un GET ne doit jamais détruire.
 export async function GET() {
-  return POST();
+  return NextResponse.json(
+    { ok: false, erreur: "Le seed s'appelle en POST avec l'en-tête x-seed-secret." },
+    { status: 405, headers: { Allow: "POST" } }
+  );
 }
