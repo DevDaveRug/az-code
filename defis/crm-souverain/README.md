@@ -80,17 +80,20 @@ npm run dev
 Le `buildCommand` fait déjà `prisma db push` au build (voir `vercel.json`). Pour semer les données de démo :
 
 ```bash
-curl -X POST https://<votre-url>.vercel.app/api/seed
-# ou GET pour convenience : https://<votre-url>.vercel.app/api/seed
+curl -X POST https://<votre-url>.vercel.app/api/seed \
+  -H "x-seed-secret: $SEED_SECRET"
 ```
 
 Retourne le compte final (entreprises, prospects, interactions).
+
+Le seed **efface** les trois tables avant de repeupler : il est protégé par `SEED_SECRET`, à poser dans les variables d'environnement Vercel. Sans cette variable la route répond 503 et ne touche à rien. Le `GET` de convenance a été retiré : il appelait le `POST`, donc une visite de navigateur, une prévisualisation de lien ou un robot d'indexation suffisait à vider la base.
 
 **Migration v0.1 -> v0.2** : le schéma a changé (retrait de `entreprise` String sur Prospect, ajout de FK `entrepriseId` + nouvelles tables `sc_entreprises` et `sc_interactions`). Après pull de v0.2 sur une base v0.1 existante :
 
 ```bash
 npx prisma db push
-curl -X POST https://<votre-url>.vercel.app/api/seed  # reseed complet
+curl -X POST https://<votre-url>.vercel.app/api/seed \
+  -H "x-seed-secret: $SEED_SECRET"   # reseed complet
 ```
 
 Ou en local :
@@ -155,6 +158,8 @@ Crée une entreprise. `nom` requis, autres champs optionnels.
 ### `POST /api/seed`
 
 Reset complet + reseed 4 entreprises + 4 prospects + interactions. Idempotent.
+
+Exige l'en-tête `x-seed-secret` égal à `SEED_SECRET` (comparaison à temps constant). Répond 401 si le secret est absent ou faux, 503 si `SEED_SECRET` n'est pas configuré. Le `GET` répond 405.
 
 ## Structure
 

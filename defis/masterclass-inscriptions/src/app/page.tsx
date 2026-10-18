@@ -51,7 +51,7 @@ export default async function Page() {
         <div>
           <h1 className="text-2xl font-semibold">Masterclass Inscriptions</h1>
           <p className="mt-1 text-sm text-slate-600">
-            Défi Alegria n°3 - MVP souverain (Next.js + Neon + Prisma + Resend)
+            Inscriptions et e-mail de confirmation automatique -- Next.js, Neon, Prisma, Resend
           </p>
         </div>
         <Link

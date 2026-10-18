@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Masterclass Inscriptions - Alegria défi n°3",
+  title: "Masterclass Inscriptions",
   description:
     "MVP souverain pour gérer les inscriptions à une masterclass avec envoi automatique d'un email de confirmation.",
 };

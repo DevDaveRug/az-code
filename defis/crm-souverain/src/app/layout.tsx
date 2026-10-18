@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "CRM Souverain",
-  description: "MVP CRM prospects avec relance 7 jours (défi Alegria)"
+  description: "Suivi de prospects avec relance automatique à 7 jours -- souverain, sans SaaS."
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -31,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </header>
         <main className="max-w-6xl mx-auto px-4 py-6">{children}</main>
         <footer className="max-w-6xl mx-auto px-4 py-8 text-xs" style={{ color: "var(--muted)" }}>
-          crm-souverain v0.1 - défi Alegria - MVP souverain Next.js + Neon + Prisma
+          CRM souverain -- Next.js, Neon, Prisma
         </footer>
       </body>
     </html>
