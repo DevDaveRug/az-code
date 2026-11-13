@@ -1,0 +1,46 @@
+// Veille blog concurrent - Prisma schema v0.1
+// Defi Alegria n°8 semaine 46 : les nouveaux articles d'un ou plusieurs blogs arrivent tout seuls dans un tableau.
+// Neon PostgreSQL partage "Sales Closer Souverain", schema isole "veille".
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+  binaryTargets   = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["veille"]
+}
+
+// Un site suivi. Ajouter un site = ajouter une ligne, sans toucher au code.
+model Source {
+  id        Int       @id @default(autoincrement())
+  nom       String
+  fluxRss   String    @unique
+  actif     Boolean   @default(true)
+  // A quoi sert la source (ex : "Demo Claire", "Veille posts LinkedIn")
+  usage     String?
+  creeLe    DateTime  @default(now())
+  // Dernier releve, pour voir d'un coup d'oeil une source qui ne repond plus
+  releveLe  DateTime?
+  erreur    String?
+  articles  Article[]
+
+  @@schema("veille")
+}
+
+// Un article. Le lien est l'identifiant : un article deja vu n'est jamais ajoute deux fois.
+model Article {
+  id              Int       @id @default(autoincrement())
+  titre           String
+  datePublication DateTime?
+  lien            String    @unique
+  sourceId        Int
+  source          Source    @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  ajouteLe        DateTime  @default(now())
+
+  @@index([datePublication])
+  @@schema("veille")
+}
