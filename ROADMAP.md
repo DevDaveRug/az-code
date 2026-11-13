@@ -26,7 +26,9 @@ Les défis Alegria ne renforcent pas tous le même produit. On distingue :
 
    -> **Brique N°5 -- missions-ca-par-client** (livré S163z-ccweb, 2026-09-28 en v0.1) -- défi Alegria 28/09 (semaine 40) : diagnostic d'une base Airtable « qui part en vrille » (7 colonnes en texte, clients retapés, CA par client impossible) et structure cible en 2 tables liées. Stack : Next.js 14 + Neon (schema `missions` isolé) + Prisma. Le seed rejoue la migration « avant -> après » avec des règles de nettoyage testées (`src/lib/nettoyage.ts`, 9 tests `node:test`) : montants, statuts, dates incomplètes, rapprochement client par e-mail, doublons possibles signalés sans suppression. Compagnon no-code : `az-no-code/defis/missions-ca-par-client/` (réutilise `AZ_Clients` de la base unifiée + `AZ_Missions`, cumuls CA). Sert d'argument « brique audit + migration de base existante » : le premier livrable d'un client qui a déjà un outil bancal.
 
-   -> **Brique N°6 -- [prochain défi]** -- à venir.
+   -> **Brique N°6 -- veille-blog-concurrent** (livré S261113z-ccweb, 2026-11-13 en v0.1) -- défi Alegria 09/11 (semaine 46) : les nouveaux articles d'un ou plusieurs blogs arrivent tout seuls dans un tableau (titre, date, lien), relevés par flux RSS. Stack : Next.js 14 + Neon (schema `veille` isolé) + Prisma + `fast-xml-parser` + Vercel Cron. Sources gérées depuis l'application, flux vérifié avant enregistrement, lien unique contre les doublons, erreur visible par source. Compagnon no-code : `az-no-code/defis/veille-blog-concurrent/` (Make + Airtable pour la version notée, n8n + NocoDB multi-sources). Sert d'argument « brique veille concurrentielle » et de veille de contenus pour les publications de David.
+
+   -> **Brique N°7 -- [prochain défi]** -- à venir.
 
 Pourquoi souverain :
 
