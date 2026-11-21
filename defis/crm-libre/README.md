@@ -26,6 +26,6 @@ Vercel, variable `DATABASE_URL` (Neon, schéma `crm_libre`). `vercel.json` lance
 
 ## État
 
-Compile (`prisma validate`, `tsc`, `next build` passent). Non testé contre une vraie base : aucun projet Neon n'est relié pour l'instant, donc aucun parcours de saisie n'a été exécuté.
+Compile (`prisma validate`, `tsc`, `next build` passent). Parcours testé le 21/11/2026 contre une branche Neon jetable (supprimée ensuite) : `prisma db push` crée le schéma `crm_libre` ; création d'un prospect (relance à J+7), d'un RDV puis d'un suivi liés au prospect et au RDV ; « Terminé » retire le suivi de la liste ; la vue `?vue=relance` montre un contact vieux de 10 jours et cache un contact du jour ; « Contacté aujourd'hui » le sort de la vue.
 
 Pas de modification ni de suppression d'un prospect, d'un RDV ou d'un suivi depuis l'interface (hors « Contacté aujourd'hui » et « Terminé ») : à ajouter si besoin.
