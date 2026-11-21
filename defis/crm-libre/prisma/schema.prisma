@@ -1,0 +1,138 @@
+// CRM libre (vide) - version Code. Même modèle que les versions Airtable et NocoDB :
+// 3 tables reliées (SC_Prospects, SC_RDV, SC_Suivis), aucune donnée, aucun champ IA.
+// Schéma isolé `crm_libre` : `db push` ne touche pas aux autres tables d'une base Neon partagée.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["crm_libre"]
+}
+
+enum Statut {
+  NOUVEAU
+  EN_COURS
+  GAGNE
+  PERDU
+
+  @@schema("crm_libre")
+}
+
+enum Action {
+  RELANCER
+  REPONDRE
+  RIEN_A_FAIRE
+
+  @@schema("crm_libre")
+}
+
+enum Source {
+  LINKEDIN
+  RECOMMANDATION
+  SITE
+  AUTRE
+
+  @@schema("crm_libre")
+}
+
+enum ContexteRdv {
+  DECOUVERTE
+  SUIVI
+  CLOSING
+
+  @@schema("crm_libre")
+}
+
+enum StatutRdv {
+  A_TRAITER
+  TRAITE
+
+  @@schema("crm_libre")
+}
+
+enum StatutSuivi {
+  A_FAIRE
+  EN_COURS
+  FAIT
+
+  @@schema("crm_libre")
+}
+
+enum Priorite {
+  HAUTE
+  MOYENNE
+  BASSE
+
+  @@schema("crm_libre")
+}
+
+model Prospect {
+  id               Int       @id @default(autoincrement())
+  prenom           String
+  nom              String
+  entreprise       String?
+  email            String?
+  telephone        String?
+  statut           Statut    @default(NOUVEAU)
+  action           Action?
+  source           Source    @default(AUTRE)
+  dateEntree       DateTime  @default(now()) @map("date_entree")
+  dernierContact   DateTime? @map("dernier_contact")
+  montantPotentiel Decimal?  @db.Decimal(10, 2) @map("montant_potentiel")
+  notes            String?   @db.Text
+
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  rdvs             Rdv[]
+  suivis           Suivi[]
+
+  @@index([statut, dernierContact])
+  @@map("sc_prospects")
+  @@schema("crm_libre")
+}
+
+model Rdv {
+  id          Int         @id @default(autoincrement())
+  titre       String
+  prospectId  Int?        @map("prospect_id")
+  dateRdv     DateTime?   @map("date_rdv")
+  contexte    ContexteRdv @default(DECOUVERTE)
+  notesBrutes String?     @db.Text @map("notes_brutes")
+  compteRendu String?     @db.Text @map("compte_rendu")
+  statut      StatutRdv   @default(A_TRAITER)
+
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  prospect    Prospect?   @relation(fields: [prospectId], references: [id], onDelete: SetNull)
+  suivis      Suivi[]
+
+  @@index([prospectId])
+  @@map("sc_rdv")
+  @@schema("crm_libre")
+}
+
+model Suivi {
+  id           Int         @id @default(autoincrement())
+  tache        String
+  description  String?     @db.Text
+  echeance     DateTime?
+  statut       StatutSuivi @default(A_FAIRE)
+  priorite     Priorite    @default(MOYENNE)
+  notesCloture String?     @db.Text @map("notes_cloture")
+  prospectId   Int?        @map("prospect_id")
+  rdvId        Int?        @map("rdv_id")
+
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  prospect     Prospect?   @relation(fields: [prospectId], references: [id], onDelete: SetNull)
+  rdv          Rdv?        @relation(fields: [rdvId], references: [id], onDelete: SetNull)
+
+  @@index([statut, echeance])
+  @@map("sc_suivis")
+  @@schema("crm_libre")
+}
