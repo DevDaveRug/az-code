@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "prisma generate && if [ \"$VERCEL_ENV\" = \"production\" ]; then prisma db push; else echo \"prisma db push ignore hors production ($VERCEL_ENV)\"; fi && next build",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["cdg1"]
+}
